@@ -35,15 +35,21 @@
       --card-width: 200px;
       --card-bg-gradient: linear-gradient(to bottom right, red, orange);
     }
+
   
+    * {
+        box-sizing: border-box; /* Ensures padding and borders are included in width/height calculations */
+    }
+
     .swiper {
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 20px;
-        height: 100vh; /* Set the height to full viewport height */
-        overflow: hidden; /* Prevent any potential overflow from causing scroll */
+        height: 100vh; 
+        overflow: hidden; 
+        padding: 0;
+        margin: 0;
     }
     
     .topic-card {
@@ -58,6 +64,7 @@
       color: white;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s;
+      margin-bottom: 20px; /* To account for the gap */
     }
   
     .topic-card:hover {
@@ -71,12 +78,12 @@
         align-items: flex-start;
         gap: 20px;
         width: var(--container-width);
-        height: calc(100vh - 190px); /* Adjusting for topic-card height and any other spacings */
+        height: calc(100vh - 170px); /* Adjusting for topic-card height, its margin, and padding of swiper */
         padding: 20px;
         border-radius: 10px;
         background-color: var(--main-bg-color);
     }
-    
+        
     .column {
       display: flex;
       flex-direction: column;
