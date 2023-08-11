@@ -1,8 +1,8 @@
 <script>
-    let topic = "Cats are better than dogs?";
-    let itemsAgree = ["User1", "User3", "User5"];
-    let itemsDisagree = ["User2", "User4"];
-  </script>
+  export let topic = "Default Topic";
+  let itemsAgree = ["User1", "User3", "User5"];
+  let itemsDisagree = ["User2", "User4"];
+</script>
   
   <div class="swiper">
     <div class="topic-card red-orange-gradient">

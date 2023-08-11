@@ -1,22 +1,25 @@
 <script>
-import { goto } from '$app/navigation';
-
-let topics = [
-  "Cats are better than dogs",
-  "Pineapple belongs on pizza",
-  "Winter is better than summer",
-  "Coffee is better than tea"
-];
-let itemsAgree = ["User1", "User3", "User5"];
-let itemsDisagree = ["User2", "User4"];
-let currentCardIndex = 0;
-
-let start = null;
-let cardOffset = 0;
-let cardTransition = "";
-let dragging = false;
-let disagreeOpacity = 0;
-let agreeOpacity = 0;
+  import { goto } from '$app/navigation';
+  
+  let topics = [
+    "Cats are better than dogs",
+    "Pineapple belongs on pizza",
+    "Winter is better than summer",
+    "Coffee is better than tea"
+  ];
+  
+  let itemsAgree = ["User1", "User3", "User5"];
+  let itemsDisagree = ["User2", "User4"];
+  let currentCardIndex = 0;
+  
+  let start = null;
+  let cardOffset = 0;
+  let cardTransition = "";
+  let dragging = false;
+  
+  function navigateToDetails(topic) {
+    goto(`/details/${encodeURIComponent(topic)}`);
+  }
 
 function swipeLeft() {
     cardTransition = "transform 0.5s ease-out";
@@ -42,14 +45,6 @@ function swipeRight() {
     }, 500);
 }
 
-function agreeAction() {
-    swipeRight();
-}
-
-function disagreeAction() {
-    swipeLeft();
-}
-
 
 function startSwipe(event) {
     dragging = true;
@@ -60,15 +55,17 @@ function startSwipe(event) {
 function swipe(event) {
     if (!dragging) return;
     cardOffset = event.clientX - start;
-
-    if (cardOffset < 0) {
-        disagreeOpacity = Math.min(Math.abs(cardOffset) / 150, 1);
-        agreeOpacity = 0;
-    } else {
-        agreeOpacity = Math.min(cardOffset / 150, 1);
-        disagreeOpacity = 0;
-    }
 }
+
+
+function agreeAction() {
+    swipeRight();
+}
+
+function disagreeAction() {
+    swipeLeft();
+}
+
 
 function endSwipe() {
     dragging = false;
@@ -89,25 +86,25 @@ function endSwipe() {
 
 </script>
   
-<div class="swiper">
+
+  <div class="swiper">
     {#each topics as topic, index}
     {#if index === currentCardIndex}
-    <div
-        class="topic-card"
-        style="transform: translateX({cardOffset}px) rotateY({cardOffset / 20}deg); transition: {cardTransition};"
-        on:mousedown={startSwipe}
-        on:mousemove={swipe}
-        on:mouseup={endSwipe}
+    <div class="topic-card"
+         style="transform: translateX({cardOffset}px) rotateY({cardOffset / 20}deg); transition: {cardTransition};"
+         on:mousedown={startSwipe}
+         on:mousemove={swipe}
+         on:mouseup={endSwipe}
     >
         <p>{topic}</p>
         <div class="buttons-container">
-            <button class="disagree-button" on:click={disagreeAction}>Disagree</button>
-            <button class="agree-button" on:click={agreeAction}>Agree</button>
+            <button class="disagree-button" on:click={swipeLeft}>Disagree</button>
+            <button class="details-button" on:click={() => navigateToDetails(topic)}>Details</button>
+            <button class="agree-button" on:click={swipeRight}>Agree</button>
         </div>
     </div>
-
     {/if}
-  {/each}
+    {/each}
     <div class="columns-container">
       <div class="disagree-column column">
         <h3>Disagree</h3>
@@ -193,7 +190,7 @@ function endSwipe() {
   }
   
   .disagree-button:hover, .agree-button:hover {
-    background-color: darken(red, 10%);
+    background-color: #cc0000; 
     transform: translateY(-2px);
   }
   
@@ -227,6 +224,29 @@ function endSwipe() {
     border-radius: 50%;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   }
+
+  
+  .details-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      background-color: #007BFF; /* Example blue color */
+      color: white;
+      transition: background 0.3s, transform 0.2s;
+  }
+
+  .details-button:hover {
+      background-color: #0056b3; /* Darker blue on hover */
+      transform: translateY(-2px);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   
   </style>
   
