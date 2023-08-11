@@ -20,7 +20,7 @@
                 $page.data.session.user?.name}</strong
             >
           </span>
-          <a href="/auth/signout" class="button" data-sveltekit-preload-data="off">Sign out</a>
+          <a href="/auth/signout" class="sign-out-button" data-sveltekit-preload-data="off">Sign out</a>
         {:else}
           <span class="notSignedInText">You are not signed in</span>
           <a href="/auth/signin" class="buttonPrimary" data-sveltekit-preload-data="off">Sign in</a>
@@ -29,7 +29,7 @@
     </div>
     <nav>
       <ul class="navItems">
-        <li class="navItem"><a href="/">Home</a></li>
+        <li class="navItem"><a href="/swipe">Feed</a></li>
         <li class="navItem"><a href="/profile">Profile</a></li>
       </ul>
     </nav>
@@ -38,114 +38,104 @@
 </div>
 
 <style>
+  /* Global styles */
   :global(body) {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
       "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
       "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
       "Noto Color Emoji";
-    padding: 0 1rem 1rem 1rem;
-    max-width: 680px;
-    margin: 0 auto;
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
     background: #fff;
-    color: #333;
+    color: rgb(20, 18, 18);
   }
-  :global(li),
-  :global(p) {
-    line-height: 1.5rem;
-  }
-  :global(a) {
-    font-weight: 500;
-  }
-  :global(hr) {
-    border: 1px solid #ddd;
-  }
-  :global(iframe) {
-    background: #ccc;
-    border: 1px solid #ccc;
-    height: 10rem;
-    width: 100%;
-    border-radius: 0.5rem;
-    filter: invert(1);
+  
+  header {
+    background-color: rgba(54, 54, 54, 0.95);
+    padding: 1rem 2%; 
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
-  .nojs-show {
-    opacity: 1;
-    top: 0;
+  nav {
+    order: 1;
   }
+
   .signedInStatus {
-    display: block;
-    min-height: 4rem;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    order: 2;
   }
+
   .loaded {
-    position: relative;
-    top: 0;
-    opacity: 1;
-    overflow: hidden;
-    border-radius: 0 0 0.6rem 0.6rem;
-    padding: 0.6rem 1rem;
-    margin: 0;
-    background-color: rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease-in;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
-  .signedInText,
-  .notSignedInText {
-    position: absolute;
-    padding-top: 0.8rem;
-    left: 1rem;
-    right: 6.5rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    display: inherit;
-    z-index: 1;
-    line-height: 1.3rem;
-  }
-  .signedInText {
-    padding-top: 0rem;
-    left: 4.6rem;
-  }
+
   .avatar {
-    border-radius: 2rem;
-    float: left;
+    border-radius: 50%;
     height: 2.8rem;
     width: 2.8rem;
     background-color: white;
     background-size: cover;
     background-repeat: no-repeat;
+    margin-right: 0.5rem;
   }
-  .button,
-  .buttonPrimary {
-    float: right;
-    margin-right: -0.4rem;
-    font-weight: 500;
-    border-radius: 0.3rem;
-    cursor: pointer;
-    font-size: 1rem;
-    line-height: 1.4rem;
-    padding: 0.7rem 0.8rem;
-    position: relative;
-    z-index: 10;
-    background-color: transparent;
-    color: #555;
-  }
-  .buttonPrimary {
-    background-color: #346df1;
-    border-color: #346df1;
-    color: #fff;
-    text-decoration: none;
-    padding: 0.7rem 1.4rem;
-  }
-  .buttonPrimary:hover {
-    box-shadow: inset 0 0 5rem rgba(0, 0, 0, 0.2);
-  }
+
+
   .navItems {
-    margin-bottom: 2rem;
-    padding: 0;
+    display: flex;
     list-style: none;
+    gap: 2rem;  /* Increase the spacing between links */
+    margin: 0;
+    padding: 0;
   }
-  .navItem {
-    display: inline-block;
-    margin-right: 1rem;
+
+  .navItem a {
+    text-decoration: none;
+    color: rgb(20, 18, 18);
+    padding: 0.5rem 1.5rem;  /* Increased horizontal padding */
+    border-radius: 0.3rem;
+    font-size: 1.1em;  /* Slightly larger font size */
+    font-weight: 600;  /* Make the links a bit bolder */
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;  /* Transition for smoother effects */
+    position: relative;  /* For the underline effect */
+  }
+
+  .navItem a:hover {
+    background-color: rgba(148, 148, 148, 0.05);
+    color: #333;  /* Slightly darker text on hover */
+    transform: translateY(-2px);  /* Lift the link a bit on hover */
+    
+  }
+
+  .navItem a:active {
+    transform: translateY(0);  /* Reset the lift effect when link is active */
+    background-color: rgba(0, 0, 0, 0.1);  /* Slightly darker background on active state */
+  }
+
+  
+  .sign-out-button {
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #ff4d4d; /* Red color for sign-out */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    outline: none;
+    margin-top: 20px; /* Space from other elements */
+  }
+
+  .sign-out-button:hover {
+    background-color: #e63939; /* Slightly darker red on hover */
   }
 </style>

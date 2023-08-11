@@ -30,7 +30,7 @@
   
   <style>
     :root {
-      --main-bg-color: rgba(20, 18, 18, 0.719);
+      --main-bg-color: rgb(54, 54, 54);;
       --container-width: 600px;
       --card-width: 200px;
       --card-bg-gradient: linear-gradient(to bottom right, red, orange);
