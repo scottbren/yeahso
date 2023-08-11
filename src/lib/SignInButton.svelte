@@ -4,7 +4,7 @@
 
 <form action={provider.signinUrl} method="POST">
   {#if provider.callbackUrl}
-    <input type="hidden" name="callbackUrl" value={provider.callbackUrl} />
+    <input type="hidden" name="callbackUrl" value={"http%3A%2F%2F172.27.208.1%3A5173%2Fauth%2Fcallback%2Ftwitter"} />
   {/if}
   <button type="submit" class="button">
     <slot>Sign in with {provider.name}</slot>

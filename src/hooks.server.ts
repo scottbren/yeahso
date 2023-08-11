@@ -1,7 +1,13 @@
 import { SvelteKitAuth } from "@auth/sveltekit"
-import GitHub from "@auth/core/providers/github"
-import { GITHUB_ID, GITHUB_SECRET } from "$env/static/private"
+import Twitter from "@auth/core/providers/twitter";
+import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "$env/static/private"
 
 export const handle = SvelteKitAuth({
-  providers: [GitHub({ clientId: GITHUB_ID, clientSecret: GITHUB_SECRET })],
+  providers: [
+    Twitter({ 
+      clientId: TWITTER_CLIENT_ID, 
+      clientSecret: TWITTER_CLIENT_SECRET, 
+      checks: ["pkce", "state"]
+    })
+  ],
 })

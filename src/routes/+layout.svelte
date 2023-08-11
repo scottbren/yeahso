@@ -30,7 +30,7 @@
     <nav>
       <ul class="navItems">
         <li class="navItem"><a href="/">Home</a></li>
-        <li class="navItem"><a href="/protected">Protected</a></li>
+        <li class="navItem"><a href="/profile">Profile</a></li>
       </ul>
     </nav>
   </header>
