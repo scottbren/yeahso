@@ -1,49 +1,81 @@
 <script>
-  import { goto } from '$app/navigation';
-  
-  let topics = [
-    "Cats are better than dogs",
-    "Pineapple belongs on pizza",
-    "Winter is better than summer",
-    "Coffee is better than tea"
-  ];
-  
-  let itemsAgree = ["User1", "User3", "User5"];
-  let itemsDisagree = ["User2", "User4"];
-  let currentCardIndex = 0;
-  
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+
+    let topics = [];
+    let currentTopic = null;
+    let itemsAgree = [];
+    let itemsDisagree = [];
+    let currentCardIndex = 0;
+
+    $: if (currentCardIndex !== null && topics.length) {
+        loadCurrentTopicData();
+    }
+
+    onMount(async () => {
+        const response = await fetch('/api/topics');
+        topics = await response.json();
+        if (topics.length > 0) {
+            loadCurrentTopicData();
+        }
+    });
+
+    async function loadCurrentTopicData() {
+        currentTopic = topics[currentCardIndex];
+        
+        const votesResponse = await fetch(`/api/topics/${currentTopic._id}/votes`);
+        const votesData = await votesResponse.json();
+        const userIds = [...new Set(votesData.map(vote => vote.userId))];
+
+        const usersResponse = await fetch(`/api/users?ids=${userIds.join(",")}`);
+        const usersData = await usersResponse.json();
+
+        const userIdToUserMap = usersData.reduce((acc, user) => {
+            acc[user._id] = user;
+            return acc;
+        }, {});
+
+        itemsAgree = votesData.filter(vote => vote.vote === 'agree').map(vote => userIdToUserMap[vote.userId]);
+        itemsDisagree = votesData.filter(vote => vote.vote === 'disagree').map(vote => userIdToUserMap[vote.userId]);
+    }
+    
   let start = null;
   let cardOffset = 0;
   let cardTransition = "";
   let dragging = false;
   
-  function navigateToDetails(topic) {
-    goto(`/details/${encodeURIComponent(topic)}`);
+  function navigateToDetails(currentTopic) {
+    goto(`/details/${currentTopic._id}`);
   }
 
-function swipeLeft() {
+  function swipeLeft() {
+    console.log("swipeLeft triggered");
     cardTransition = "transform 0.5s ease-out";
     cardOffset = -window.innerWidth;
     setTimeout(() => {
-        if (currentCardIndex < topics.length - 1) {
-            currentCardIndex++;
-        }
+        currentCardIndex++;
+        console.log("Updated currentCardIndex after swipeLeft:", currentCardIndex);
+    
         cardOffset = 0;
         cardTransition = "";
+        loadCurrentTopicData();
     }, 500);
 }
 
 function swipeRight() {
+    console.log("swipeRight triggered");
     cardTransition = "transform 0.5s ease-out";
     cardOffset = window.innerWidth;
     setTimeout(() => {
-        if (currentCardIndex < topics.length - 1) {
-            currentCardIndex++;
-        }
+        currentCardIndex++;
+        console.log("Updated currentCardIndex after swipeRight:", currentCardIndex);
+
         cardOffset = 0;
         cardTransition = "";
+        loadCurrentTopicData();
     }, 500);
 }
+
 
 
 function startSwipe(event) {
@@ -86,167 +118,148 @@ function endSwipe() {
 
 </script>
   
-
-  <div class="swiper">
-    {#each topics as topic, index}
-    {#if index === currentCardIndex}
+<div class="swiper">
+    {#if currentTopic}
     <div class="topic-card"
          style="transform: translateX({cardOffset}px) rotateY({cardOffset / 20}deg); transition: {cardTransition};"
          on:mousedown={startSwipe}
          on:mousemove={swipe}
          on:mouseup={endSwipe}
     >
-        <p>{topic}</p>
+        <p>{currentTopic.title}</p>
         <div class="buttons-container">
             <button class="disagree-button" on:click={swipeLeft}>Disagree</button>
-            <button class="details-button" on:click={() => navigateToDetails(topic)}>Details</button>
+            <button class="details-button" on:click={() => navigateToDetails(currentTopic)}>Details</button>
             <button class="agree-button" on:click={swipeRight}>Agree</button>
         </div>
     </div>
     {/if}
-    {/each}
     <div class="columns-container">
       <div class="disagree-column column">
         <h3>Disagree</h3>
         {#each itemsDisagree as user}
-          <img src="https://i.pravatar.cc/150?img=1" alt="{user} profile picture" class="profile-pic"/>
+          <img src={user.profilePicture} alt="{user.username} profile picture" class="profile-pic"/>
         {/each}
       </div>
       <div class="agree-column column">
         <h3>Agree</h3>
         {#each itemsAgree as user}
-          <img src="https://i.pravatar.cc/150?img=2" alt="{user} profile picture" class="profile-pic"/>
+          <img src={user.profilePicture} alt="{user.username} profile picture" class="profile-pic"/>
         {/each}
       </div>
     </div>
   </div>
   
   
-  <style>:root {
-    --main-bg-color: rgb(54, 54, 54);
-    --container-width: 600px;
-    --card-width: 250px;
-    --card-bg-gradient: linear-gradient(to bottom right, red, orange);
-  }
   
-  .swiper {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh; 
-    overflow: hidden; 
-    padding: 0;
-    margin: 0;
-  }
-  
-  .topic-card {
-    width: var(--container-width);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 1.5em;
-    background: var(--card-bg-gradient);
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-    margin-bottom: 20px;
-    padding: 20px;
-    height: 750px;
-    transform-origin: center center;
-  }
-  
-  .topic-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .buttons-container {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-  }
-  
-  .disagree-button, .agree-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-    outline: none;
-    transition: background 0.3s, transform 0.2s;
-  }
-  
-  .disagree-button {
-    background-color: red;
-    color: white;
-  }
-  
-  .agree-button {
-    background-color: green;
-    color: white;
-  }
-  
-  .disagree-button:hover, .agree-button:hover {
-    background-color: #cc0000; 
-    transform: translateY(-2px);
-  }
-  
-  .columns-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: var(--container-width);
-    height: calc(100vh - 270px);
-    background-color: var(--main-bg-color);
-    padding: 20px;
-    border-radius: 10px;
-  }
-  
-  .column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: var(--card-width);
-    align-items: center;
-  }
-  
-  .column h3 {
-    font-size: 1.3em;
-    margin-bottom: 20px;
-  }
-  
-  .profile-pic {
-    width: 40px; 
-    height: 40px; 
-    border-radius: 50%;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  
-  .details-button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-      background-color: #007BFF; /* Example blue color */
-      color: white;
-      transition: background 0.3s, transform 0.2s;
-  }
-
-  .details-button:hover {
-      background-color: #0056b3; /* Darker blue on hover */
-      transform: translateY(-2px);
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  
-  </style>
-  
+  <style>
+    :root {
+        --card-bg-gradient: linear-gradient(135deg, #ff6b6b, #ffad5e);
+        --secondary-color: #f5f7fa;
+        --neutral-dark: #333;
+        --neutral-light: #aaa;
+        --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+        font-family: var(--font);
+        background: var(--secondary-color);
+    }
+    
+    .swiper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .topic-card {
+        width: 650px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card-bg-gradient);
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s;
+        margin-bottom: 15px;
+        margin-top: 25px;
+        padding: 40px 30px;
+        height: 450px;
+        font-size: 1.8em;
+        transform-origin: center center;
+    }
+    
+    .buttons-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        gap: 10px;
+    }
+    
+    button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1.1em;
+        cursor: pointer;
+        outline: none;
+        transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .disagree-button {
+        background-color: #ff6b6b;
+        color: white;
+    }
+    
+    .agree-button {
+        background-color: #ffad5e;
+        color: white;
+    }
+    
+    .details-button {
+        background-color: var(--neutral-light);
+        color: var(--neutral-dark);
+    }
+    
+    button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .columns-container {
+        display: flex;
+        justify-content: space-between;
+        width: 650px;
+        height: calc(100vh - 300px);
+        background: var(--neutral-dark);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .column {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 275px;
+        align-items: center;
+    }
+    
+    .column h3 {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+        color: var(--neutral-light);
+    }
+    
+    .profile-pic {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    </style>

@@ -23,14 +23,14 @@
           <a href="/auth/signout" class="sign-out-button" data-sveltekit-preload-data="off">Sign out</a>
         {:else}
           <span class="notSignedInText">You are not signed in</span>
-          <a href="/auth/signin" class="buttonPrimary" data-sveltekit-preload-data="off">Sign in</a>
+          <a href="/auth/signin" class="sign-out-button" data-sveltekit-preload-data="off">Sign in</a>
         {/if}
       </p>
     </div>
     <nav>
       <ul class="navItems">
-        <li class="navItem"><a href="/swipe">Feed</a></li>
-        <li class="navItem"><a href="/profile">Profile</a></li>
+        <li class="navItem"><a href="/swipe">feed</a></li>
+        <li class="navItem"><a href="/profile">profile</a></li>
       </ul>
     </nav>
   </header>
@@ -99,7 +99,7 @@
 
   .navItem a {
     text-decoration: none;
-    color: rgb(20, 18, 18);
+    color: whitesmoke;
     padding: 0.5rem 1.5rem;  /* Increased horizontal padding */
     border-radius: 0.3rem;
     font-size: 1.1em;  /* Slightly larger font size */

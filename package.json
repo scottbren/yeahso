@@ -27,6 +27,7 @@
   "dependencies": {
     "@auth/core": "latest",
     "@auth/sveltekit": "latest",
+    "mongodb": "^5.7.0",
     "normalize.css": "^8.0.1"
   },
   "type": "module"

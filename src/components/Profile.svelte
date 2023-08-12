@@ -1,109 +1,142 @@
 <script>
-  let username = 'John Doe';
-  let profilePicture = 'https://i.pravatar.cc/150?img=3';
-  let items = ['Item 1', 'Item 2', 'Item 3'];
+  import { onMount } from 'svelte';
+  
+  let username;
+  let profilePicture;
+  let disagreements = [];
+  let agreements = [];
+
+  onMount(async () => {
+    // Example endpoint to fetch user data by username
+    const response = await fetch(`/api/users/${encodeURIComponent(username)}`);
+    const userData = await response.json();
+
+    username = userData.username;
+    profilePicture = userData.profilePicture;
+
+    // Example endpoints to fetch user's agreements and disagreements
+    const agreementsResponse = await fetch(`/api/users/${encodeURIComponent(username)}/agreements`);
+    agreements = await agreementsResponse.json();
+
+    const disagreementsResponse = await fetch(`/api/users/${encodeURIComponent(username)}/disagreements`);
+    disagreements = await disagreementsResponse.json();
+  });
 </script>
 
+
 <div class="profile">
-  <div class="profile-info-container">
-    <div class="profile-picture">
-      <img src={profilePicture} alt="Profile" />
-    </div>
-    <div class="profile-info">
+  <div class="profile-header">
+      <div class="profile-picture">
+          <img src={profilePicture} alt="Profile" />
+      </div>
       <h2>{username}</h2>
-    </div>
   </div>
-  <div class="profile-container">
-    <div class="disagree-column">
-      {#each items as item}
-        <div class="card red-orange-gradient">
-          <p>{item}</p>
-        </div>
-      {/each}
-    </div>
-    <div class="agree-column">
-      {#each items as item}
-        <div class="card red-orange-gradient">
-          <p>{item}</p>
-        </div>
-      {/each}
-    </div>
+  <div class="profile-content">
+      <div class="column">
+          <h3>Disagreements</h3>
+          {#each disagreements as disagreement}
+              <div class="card">
+                  <p>{disagreement.title}</p>
+              </div>
+          {/each}
+      </div>
+      <div class="column">
+          <h3>Agreements</h3>
+          {#each agreements as agreement}
+              <div class="card">
+                  <p>{agreement.title}</p>
+              </div>
+          {/each}
+      </div>
   </div>
 </div>
 
 <style>
-  :root {
-    --main-bg-color: rgb(54, 54, 54);
-    --profile-container-width: 600px;
-    --card-width: 200px;
-    --card-bg-gradient: linear-gradient(to bottom right, red, orange);
-  }
+:root {
+    --gradient: linear-gradient(135deg, #ff6b6b, #ffad5e);
+    --neutral: #2a2a2a;
+    --light: #f7f7f7;
+    --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-  .profile {
-    text-align: center;
+body {
+    font-family: var(--font);
+    background: var(--light);
+    margin: 0;
+    padding: 0;
+}
+
+.profile {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px; /* Provides consistent spacing between child elements */
-  }
+    gap: 50px;
+    padding: 60px 0;
+}
 
-  .profile-info-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    width: var(--profile-container-width);
-  }
+.profile-header {
+    background: var(--gradient);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
 
-  .profile-picture {
-    width: 100px;
-    height: 100px;
+.profile-picture {
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     overflow: hidden;
-  }
+    margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
 
-  .profile-picture img {
+.profile-picture img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
+}
 
-  .profile-info h2 {
-    font-weight: bold;
-    font-size: 1.5em;
-    color: var(--card-bg-gradient);
-  }
+h2 {
+    font-size: 2em;
+    color: var(--light);
+    margin: 0;
+}
 
-  .profile-container {
+.profile-content {
     display: flex;
-    justify-content: space-around;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    background-color: var(--main-bg-color);
-    width: var(--profile-container-width);
-    min-height: 600px;
-  }
+    gap: 50px;
+    width: 90%;
+    max-width: 1100px;
+}
 
-  .disagree-column, .agree-column {
+.column {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Adds spacing between cards */
-  }
+    gap: 20px;
+}
 
-  .card {
-    width: var(--card-width);
-    border-radius: 25px;
-    padding: 10px;
-    background: var(--card-bg-gradient);
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow to the cards */
-    transition: transform 0.2s; /* Adds a subtle animation for hover effect */
-  }
+h3 {
+    display: flex;
+    justify-content: center;
+    font-size: 1.6em;
+    color: var(--light);
+    border-bottom: 2px solid var(--gradient);
+    padding-bottom: 10px;
+}
 
-  .card:hover {
-    transform: translateY(-5px); /* Lifts the card slightly on hover */
-  }
+.card {
+    padding: 20px;
+    background: var(--light);
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    font-size: 1.2em;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
 </style>
-
-

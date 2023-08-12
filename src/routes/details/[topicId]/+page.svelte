@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import Details from '../../../components/Details.svelte';
 
-  let topic = decodeURIComponent($page.params.topic);
+  let topicId = $page.params.topicId; // Assuming your route has :topicId as a parameter
 </script>
 
-<Details topic={topic} />
+<Details topicId={topicId} />
