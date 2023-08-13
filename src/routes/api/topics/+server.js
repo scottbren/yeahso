@@ -7,7 +7,7 @@ export async function GET() {
         const db = await connectToDb();
         console.log("Attempting to fetch topics...");
         const topics = await db.collection('topics').find().toArray();
-        //console.log("Fetched topics:", topics);
+        console.log("Fetched topics:", topics);
         const count = await db.collection('topics').countDocuments();
         console.log("Number of topics:", count);
 
