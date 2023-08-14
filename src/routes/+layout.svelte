@@ -57,18 +57,22 @@
   }
   
   header {
-    background-color: rgba(54, 54, 54, 0.95);
+    background-color: rgba(54, 54, 54);
     padding: 1rem 2%; 
     box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-  }
+    position: relative; /* Ensure it's positioned */
+    z-index: 1000; /* Assign a high z-index value */
+}
+
 
   nav {
     order: 1;
   }
+
 
   .signedInStatus {
     display: flex;

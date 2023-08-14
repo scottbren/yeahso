@@ -48,6 +48,19 @@
     goto(`/details/${currentTopic._id}`);
   }
 
+      // Function to generate random values
+      function getRandomValue(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+    function generateRandomBinary(length) {
+        let binaryString = '';
+        for (let i = 0; i < length; i++) {
+        binaryString += Math.random() < 0.5 ? '0' : '1';
+        }
+        return binaryString;
+    }
+
+
   function swipeLeft() {
     console.log("swipeLeft triggered");
     cardTransition = "transform 0.5s ease-out";
@@ -117,6 +130,14 @@ function endSwipe() {
 
 
 </script>
+
+<div class="matrix">
+    {#each Array.from({ length: 1000 }) as _, index}
+        <div class="matrix-line" style="top: {getRandomValue(0, 100)}%">
+            {generateRandomBinary(1000)} <!-- Longer binary strings -->
+        </div>
+    {/each}
+</div>
   
 <div class="swiper">
     {#if currentTopic}
@@ -176,8 +197,24 @@ body {
     overflow: hidden;
     padding: 0;
     margin: 0;
-    background: var(--secondary-color);
+    background: rgba(0, 0, 0, 0.7); /* 80% opaque so that matrix effect is visible behind */
     background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px);
+}
+
+/* MATRIX EFFECT STYLES */
+.matrix {
+    position: absolute;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    color: var(--neon-green);
+    z-index: -1; /* Make it sit behind your content */
+    animation: matrixFall 5s linear infinite;
+
+}
+
+.matrix .matrix-line {
+    animation: matrixFall infinite; /* Ensure it keeps looping */
 }
 
 .topic-card {
@@ -218,10 +255,17 @@ button {
     cursor: pointer;
     outline: none;
     transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    box-shadow: none;
+    transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
+
 }
 
 button:hover {
-    transform: translateY(-3px);
+    background-color: var(--neon-green);
+    color: var(--dark-bg);
+    transform: translateY(-2px);
     box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
 }
 
@@ -261,5 +305,16 @@ button:hover {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+
+
+@keyframes matrixFall {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(0%);
+    }
+}
+
 
 </style>

@@ -31,7 +31,7 @@ export const handle = SvelteKitAuth({
       // Make an API call to save the user data in the DB using global `fetch`.
       // Ensure the URL is absolute.
       let id = userData.id;
-      const response = await fetch(`http://172.24.128.1:5173/api/users/twitter/${id}`, { 
+      const response = await fetch(`http://172.17.64.1:5173/api/users/twitter/${id}`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
