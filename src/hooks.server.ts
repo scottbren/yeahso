@@ -38,8 +38,10 @@ export const handle = SvelteKitAuth({
         },
         body: JSON.stringify(userData),
       });
-      console.log("response: ", await response.json())
-
+      
+      const responseData = await response.json();
+      console.log("response: ", responseData)
+      
       // Check if the response is successful.
       if (!response.ok) {
         console.log(response)

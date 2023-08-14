@@ -1,5 +1,9 @@
+
 <script lang="ts">
   import { page } from "$app/stores"
+  if($page.data.session) {
+    console.log($page.data.session.user)
+  }
 </script>
 
 <div>
@@ -28,11 +32,12 @@
       </p>
     </div>
     <nav>
-      <ul class="navItems">
-        <li class="navItem"><a href="/swipe">feed</a></li>
-        <li class="navItem"><a href="/profile">profile</a></li>
-      </ul>
+        <ul class="navItems">
+          <li class="navItem"><a href="/swipe">feed</a></li>
+        </ul>
     </nav>
+    
+    
   </header>
   <slot />
 </div>

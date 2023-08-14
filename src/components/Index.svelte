@@ -74,6 +74,8 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
         border: 2px solid #21f034;
+        box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+
     }
     
     .brand {

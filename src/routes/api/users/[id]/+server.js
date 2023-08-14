@@ -13,20 +13,21 @@ export async function GET(request) {
         const db = await connectToDb();
 
         if (!isValidObjectId(request.params.id)) {
-            throw error(400, 'Invalid user ID');
+            return new Response(JSON.stringify({ error: 'Invalid user ID' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
 
-        const user = await db.collection('users').findOne({ _id: ObjectId(request.params.id) });
+        const user = await db.collection('users').findOne({ _id: request.params.id });
 
         if (!user) {
-            throw error(404, 'User not found');
+            return new Response(JSON.stringify({ error: 'User not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
         }
 
         return new Response(JSON.stringify(user), { headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
-        return err;
+        return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 }
+
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function PUT(request) {

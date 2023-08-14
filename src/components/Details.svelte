@@ -37,11 +37,13 @@
     // Create a mapping of userId to user details for easy lookup
     const userIdToUserDetailsMap = usersData.reduce((acc, user) => {
         acc[user._id] = {
+            userId: user._id,  // <-- Added this
             username: user.username,
             profilePicture: user.profilePicture
         };
         return acc;
     }, {});
+
     // Split votes into agree and disagree using the detailed map
     itemsAgree = votesData
         .filter(vote => vote.vote === 'agree')
@@ -60,112 +62,118 @@
     <div class="columns-container">
         <div class="disagree-column column">
             <h3>Disagree</h3>
-            {#each itemsDisagree as user}
-            <div class="card">
-              <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
-              <p>{user.username}</p>
-            </div>
-          {/each}
-          
+            {#each itemsDisagree as user (user.userId)}  <!-- Using user.userId as a key -->
+            <a href="/profile/{user.userId}"> 
+                <div class="card">
+                    <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
+                    <p>{user.username}</p>
+                </div>
+            </a>
+        {/each}
         </div>
+        
         <div class="agree-column column">
             <h3>Agree</h3>
-            {#each itemsAgree as user}
-            <div class="card">
-              <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
-              <p>{user.username}</p>
-            </div>
-          {/each}
-          
+            {#each itemsAgree as user (user.userId)}  <!-- Using user.userId as a key -->
+            <a href="/profile/{user.userId}">
+                <div class="card">
+                    <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
+                    <p>{user.username}</p>
+                </div>
+            </a>
+        {/each}
         </div>
     </div>
 </div>
   
 <style>
-:root {
-    --gradient: linear-gradient(135deg, #ff6b6b, #ffad5e);
-    --neutral: #2a2a2a;
-    --light: #f7f7f7;
-    --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-    font-family: var(--font);
-    background: var(--light);
-    margin: 0;
-    padding: 0;
-}
-
-.swiper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 40px;
-    padding: 60px 0;
-}
-
-.topic-card {
-    width: 80%;
-    max-width: 800px;
-    height: 200px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    color: var(--light);
-    background: var(--gradient);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-}
-
-.topic-card:hover {
-    transform: translateY(-10px);
-}
-
-.columns-container {
-    display: flex;
-    gap: 50px;
-    width: 90%;
-    max-width: 1100px;
-}
-
-.column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-h3 {
-    display: flex;
-    justify-content: center;
-    font-size: 1.6em;
-    color: var(--light);
-    border-bottom: 2px solid var(--gradient);
-    padding-bottom: 10px;
-}
-
-.card {
-    padding: 20px;
-    background: var(--light);
-    border-radius: 20px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    font-size: 1.2em;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
-
-.profile-pic {
-  width: 50px; /* or any desired size */
-  height: 50px;
-  border-radius: 50%; /* makes the image circular */
-  margin-right: 10px; /* spacing between the image and the username */
-  object-fit: cover; /* ensures the image covers the entire space without distortion */
-}
-
-</style>
+    :root {
+        --card-bg-gradient: linear-gradient(135deg, #21f034);
+        --secondary-color: #000;
+        --neutral-dark: #333;
+        --neutral-light: #aaa;
+        --font: 'Courier New', Courier, monospace;
+        --neon-green: #21f034;
+        --neon-orange: #ff6b6b;
+    }
+    
+    body {
+        font-family: var(--font);
+        background: var(--secondary-color);
+        color: var(--neon-green);
+    }
+    
+    .swiper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        padding: 60px 0;
+        background: var(--secondary-color);
+        background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px);
+    }
+    
+    .topic-card {
+        width: 80%;
+        max-width: 800px;
+        height: 200px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        color: white;
+        background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 3px), var(--card-bg-gradient);
+        box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+        transition: transform 0.3s;
+        margin-bottom: 15px;
+        margin-top: 25px;
+    }
+    
+    .columns-container {
+        display: flex;
+        gap: 50px;
+        width: 90%;
+        max-width: 1100px;
+    }
+    
+    .column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow-y: auto; /* Add scrolling if content overflows vertically */
+        max-height: 500px; /* Adjust to your preference */
+    }
+    
+    h3 {
+        display: flex;
+        justify-content: center;
+        font-size: 1.6em;
+        color: var(--light);
+        border-bottom: 2px solid var(--neon-green);
+        padding-bottom: 10px;
+    }
+    
+    .card {
+        padding: 20px;
+        background: var(--neutral-light);
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        font-size: 1.2em;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .profile-pic {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+    }
+    </style>
