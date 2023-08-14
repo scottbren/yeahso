@@ -19,7 +19,6 @@
         return binaryString;
     }
 
-
 </script>
 
 
@@ -69,6 +68,8 @@ body, h1, p {
     position: relative;
     padding-bottom: 300px;
     
+    
+    
 }
 
 .container::before {
@@ -91,6 +92,7 @@ body, h1, p {
     border-radius: 10px;
     border: 2px solid var(--neon-green);
     box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+    
 }
 
 /* TEXT STYLES */

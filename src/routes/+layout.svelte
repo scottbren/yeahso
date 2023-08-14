@@ -45,28 +45,27 @@
 <style>
   /* Global styles */
   :global(body) {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-      "Noto Color Emoji";
+    font-family: 'Courier New', Courier, monospace; /* Matrix-like monospace font */
     padding: 0;
     margin: 0;
     max-width: 100%;
-    background: #fff;
-    color: rgb(20, 18, 18);
-  }
+    background: black; /* Matrix black background */
+    color: #33FF33; /* Matrix green */
+}
+
   
-  header {
-    background-color: rgba(54, 54, 54);
-    padding: 1rem 2%; 
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+header {
+    background-color: black; /* Matching Matrix background */
+    padding: 1rem 2%;
+    box-shadow: 0px 2px 10px rgba(0, 255, 0, 0.5); /* Green shadow for depth */
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    position: relative; /* Ensure it's positioned */
-    z-index: 1000; /* Assign a high z-index value */
+    position: relative;
+    z-index: 1000;
 }
+
 
 
   nav {
@@ -108,43 +107,43 @@
 
   .navItem a {
     text-decoration: none;
-    color: whitesmoke;
-    padding: 0.5rem 1.5rem;  /* Increased horizontal padding */
+    color: #33FF33; /* Matrix green for links */
+    padding: 0.5rem 1.5rem;
     border-radius: 0.3rem;
-    font-size: 1.1em;  /* Slightly larger font size */
-    font-weight: 600;  /* Make the links a bit bolder */
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;  /* Transition for smoother effects */
-    position: relative;  /* For the underline effect */
-  }
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    position: relative;
+}
 
-  .navItem a:hover {
-    background-color: rgba(148, 148, 148, 0.05);
-    color: #333;  /* Slightly darker text on hover */
-    transform: translateY(-2px);  /* Lift the link a bit on hover */
-    
-  }
+.navItem a:hover {
+    background-color: rgba(51, 255, 51, 0.1); /* Slight green background on hover */
+    color: white;
+    transform: translateY(-2px);
+}
 
-  .navItem a:active {
-    transform: translateY(0);  /* Reset the lift effect when link is active */
-    background-color: rgba(0, 0, 0, 0.1);  /* Slightly darker background on active state */
-  }
+.navItem a:active {
+    transform: translateY(0);
+    background-color: rgba(51, 255, 51, 0.2); /* Slightly darker green background on active state */
+}
 
   
-  .sign-out-button {
+.sign-out-button {
     text-decoration: none;
     padding: 10px 20px;
     font-size: 1em;
-    background-color: #ff4d4d; /* Red color for sign-out */
-    color: white;
+    background-color: #33FF33; /* Matrix green for the button */
+    color: black; /* Black text for contrast */
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
     outline: none;
-    margin-top: 20px; /* Space from other elements */
-  }
+    margin-top: 20px;
+}
 
-  .sign-out-button:hover {
-    background-color: #e63939; /* Slightly darker red on hover */
-  }
+.sign-out-button:hover {
+    background-color: #28CC28; /* Slightly darker green on hover */
+}
+
 </style>
