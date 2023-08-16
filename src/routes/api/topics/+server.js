@@ -41,26 +41,40 @@ export async function GET(request) {
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST(request) {
     try {
+        console.log(request.request.body)
         const db = await connectToDb();
-        const { topicname, profilePicture } = request.body;
 
+        // Parsing the body first
+        const rawData = await request.request.body.getReader().read();
+        const dataString = new TextDecoder().decode(rawData.value);
+        const data = JSON.parse(dataString);
+        
+        // You should define newTopic first before using it
+        const { title } = data;
         const newTopic = {
-            topicname,
-            profilePicture
+            title
         };
 
+        // Inserting the data into the database
         const result = await db.collection('topics').insertOne(newTopic);
 
-        if (result.insertedCount === 1) {
-            return new Response(JSON.stringify(result.ops[0]), {
-                status: 201,  // Created
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } else {
-            throw error(500, 'Failed to create topic');
-        }
+        // Update newTopic with the insertedId
+        newTopic._id = result.insertedId;
+        console.log("result", result)
+
+        // Return the newTopic object using a Response object
+        return new Response(JSON.stringify(newTopic), {
+            status: 201,  // Created
+            headers: { 'Content-Type': 'application/json' }
+        });
+
     } catch (err) {
         console.error("Error creating topic:", err);
-        throw error(500, 'Internal Server Error');
+        return new Response(JSON.stringify({ message: 'Internal Server Error' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 }
+
+

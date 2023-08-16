@@ -3,31 +3,31 @@
     let topicDescription = '';
 
     const submitTopic = async () => {
-        if (topicTitle.trim() && topicDescription.trim()) {
-            try {
-                const response = await fetch('/api/topics', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        title: topicTitle,
-                        description: topicDescription,
-                    }),
-                });
+    if (topicDescription.trim()) {
+        try {
+            const response = await fetch('/api/topics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    description: topicDescription,
+                }),
+            });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log(result); // Handle success, maybe navigate to the created topic or show a success message
-                } else {
-                    const error = await response.json();
-                    console.error(error.message || 'Error submitting topic');
-                }
-            } catch (error) {
-                console.error('Network error:', error);
+            if (response.ok) {
+                const result = await response.json();
+                console.log(result); // Handle success, maybe navigate to the created topic or show a success message
+            } else {
+                const error = await response.json();
+                console.error(error.message || 'Error submitting topic');
             }
+        } catch (error) {
+            console.error('Network error:', error);
         }
-    };
+    }
+};
+
 </script>
 
 <div class="swiper">

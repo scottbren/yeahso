@@ -28,9 +28,9 @@
         }
     });
 
-    function setCurrentTopic() {
-        if (currentCardIndex !== null && currentCardIndex < topics.length) {
-            currentTopic = topics[currentCardIndex];
+    function navigateToDetails() {
+        if (currentTopic) {
+            goto(`/details/${currentTopic._id}`);
         }
     }
 
@@ -141,8 +141,10 @@
         <p>{currentTopic.title}</p>
         <div class="buttons-container">
             <button class="disagree-button" on:click={swipeLeft}>❌</button>
+            <button class="more-button" on:click={navigateToDetails}>More</button>
             <button class="agree-button" on:click={swipeRight}>✅</button>
         </div>
+        
     </div>
     {:else}
     <p>No new topics available for voting.</p>
@@ -201,6 +203,25 @@
         align-items: center;
         overflow-x: hidden;
     }
+
+    /* Styles for the 'more' button */
+    .swiper .more-button {
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        background-color: #ddd;  /* Neutral color for more */
+        color: black;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+    }
+
+    /* Hover effect for better interactivity */
+    .swiper .more-button:hover {
+        background-color: #ccc;  /* Slightly darker shade on hover for more */
+        transform: scale(1.05); /* Slightly enlarge the button */
+    }
+
     
     .topic-card {
         width: 650px;
