@@ -2,15 +2,32 @@ import { connectToDb } from '../../../db.js';
 import { error } from '@sveltejs/kit';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function GET() {
+export async function GET(request) {
     try {
         const db = await connectToDb();
-        console.log("Attempting to fetch topics...");
-        const topics = await db.collection('topics').find().toArray();
-        console.log("Fetched topics:", topics);
-        const count = await db.collection('topics').countDocuments();
-        console.log("Number of topics:", count);
+        const session = await request.locals.getSession(request);
+        const userId = session?.user.id;
 
+        console.log("userId from getSession", userId);
+        
+        // Get the userId from the request query
+        console.log("request.locals:", request.locals);
+
+        console.log("request.locals:", request.locals);
+
+        console.log("userId from params", userId)
+        // If no userId is provided, return all topics (you might want to handle this differently)
+        if (!userId) {
+            const topics = await db.collection('topics').find().toArray();
+            return new Response(JSON.stringify(topics), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        // Fetch all topics the user has voted on
+        const votedTopics = await db.collection('votes').find({ userId }).toArray();
+        const votedTopicIds = votedTopics.map(vote => vote.topicId);
+        console.log(votedTopicIds)
+        // Fetch topics the user hasn't voted on
+        const topics = await db.collection('topics').find({ _id: { $nin: votedTopicIds } }).toArray();
         
         return new Response(JSON.stringify(topics), { headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
@@ -18,6 +35,8 @@ export async function GET() {
         throw error(500, 'Internal Server Error');
     }
 }
+
+
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST(request) {

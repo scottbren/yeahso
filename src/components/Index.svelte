@@ -5,30 +5,9 @@
     function navigateToApp() {
       goto('/auth/signin');
     }
-
-
-    // Function to generate random values
-    function getRandomValue(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-    function generateRandomBinary(length) {
-        let binaryString = '';
-        for (let i = 0; i < length; i++) {
-        binaryString += Math.random() < 0.5 ? '0' : '1';
-        }
-        return binaryString;
-    }
-
+    
 </script>
 
-
-<div class="matrix">
-    {#each Array.from({ length: 1000 }) as _, index}
-        <div class="matrix-line" style="top: {getRandomValue(0, 100)}%">
-            {generateRandomBinary(1000)} <!-- Longer binary strings -->
-        </div>
-    {/each}
-</div>
 
 <div class="container">
     <div class="content">
@@ -36,183 +15,84 @@
         <p>The modern platform for debating conspiracy theories. Discover, engage, and voice your opinions.</p>
         <button on:click={navigateToApp}>Get Started</button>
     </div>
-
 </div>
 
-
-
 <style>
-:root {
-    --neon-green: #21f034;
-    --dark-bg: #000;
-    --transition-speed: 0.3s;
-}
-
-/* BASE STYLES */
-body, h1, p {
-    margin: 0;
-    padding: 0;
-    font-family: 'Courier New', Courier, monospace;
-    color: var(--neon-green);
-    font-weight: normal;
-    animation: flicker 3s infinite;
-}
-
-/* CONTAINER STYLES */
-.container {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(145deg, transparent, transparent), rgba(0, 0, 0, 0.8);    overflow: hidden;
-    position: relative;
-    padding-bottom: 300px;
+    :root {
+        --background-color: #2B2632;
+        --gradient-start: #D23D58;
+        --gradient-end: #FFD53F;
+        --transition-speed: 0.3s;
+    }
     
+    body, h1, p, button {
+        font-family: 'Jockey One', sans-serif; /* Introduced a more modern font */
+        margin: 0;
+        padding: 0;
+    }
     
+    body {
+        background-color: var(--background-color);
+        background-image: radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent); /* Slight background texture */
+    }
     
-}
-
-.container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(33, 240, 52, 0.05) 2px, rgba(33, 240, 52, 0.05) 3px);
-    pointer-events: none;
-    animation: scanline 0.5s linear infinite;
-}
-
-.content {
-    max-width: 600px;
-    text-align: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.7); /* 80% opaque so that matrix effect is visible behind */
-    border-radius: 10px;
-    border: 2px solid var(--neon-green);
-    box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+    .container {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
     
-}
-
-/* TEXT STYLES */
-h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-}
-
-p {
-    font-size: 1.2rem;
-    margin-bottom: 40px;
-}
-
-.brand {
-    color: var(--neon-green);
-    font-weight: bold;
-    transition: color var(--transition-speed);
-}
-
-.brand:hover {
-    color: var(--dark-bg);
-    background-color: var(--neon-green);
-    padding: 2px 4px;
-}
-
-/* BUTTON STYLES */
-button {
-    padding: 12px 30px;
-    font-size: 1.1rem;
-    background-color: var(--dark-bg);
-    color: var(--neon-green);
-    border: 2px solid var(--neon-green);
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: none;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
-    outline: none;
-}
-
-button:hover {
-    background-color: var(--neon-green);
-    color: var(--dark-bg);
-    transform: translateY(-2px);
-}
-
-button:focus {
-    box-shadow: 0 0 5px var(--neon-green);
-}
-
-/* MATRIX EFFECT STYLES */
-.matrix {
-    position: absolute;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    color: var(--neon-green);
-    z-index: 0; /* Make it sit behind your content */
-    animation: matrixFall 5s linear infinite;
-
-}
-
-.matrix .matrix-line {
-    animation: matrixFall infinite; /* Ensure it keeps looping */
-}
-
-
-/* ANIMATIONS */
-@keyframes scanline {
-    0% {
-        background-position: 0 -100%;
+    .content {
+        max-width: 650px;
+        text-align: center;
+        padding: 40px;
+        background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+        border-radius: 15px;
+        color: var(--background-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Added shadow for depth */
+        margin-bottom: 300px;
     }
-    100% {
-        background-position: 0 100%;
+    
+    h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        font-weight: bold;
     }
-}
-
-@keyframes flicker {
-    0%, 100% {
-        opacity: 1;
+    
+    p {
+        font-size: 1.4rem;
+        margin-bottom: 50px;
+        line-height: 1.6; /* Improved readability */
     }
-    50% {
-        opacity: 0.9;
+    
+    .brand {
+        transition: color var(--transition-speed);
     }
-}
-
-@keyframes type {
-    from {
-        width: 0;
+    
+    /* Button Styling */
+    button {
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        background: var(--background-color);
+        color: var(--gradient-start);
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        outline: none;
     }
-    to {
-        width: 50ch;
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Intensified shadow on hover */
     }
-}
-
-@keyframes blink {
-    from, to {
-        border-color: transparent;
+    
+    button:focus {
+        box-shadow: 0 0 5px var(--gradient-start);
     }
-    50% {
-        border-color: var(--neon-green);
-    }
-}
-
-@keyframes fall {
-    to {
-        transform: translateY(100vh);
-    }
-}
-
-@keyframes matrixFall {
-    0% {
-        transform: translateY(-100%);
-    }
-    100% {
-        transform: translateY(0%);
-    }
-}
-
-
-
-
-</style>
+    
+    </style>
     

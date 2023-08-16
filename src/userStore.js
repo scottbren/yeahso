@@ -1,4 +1,6 @@
+// src/stores/userStore.js
 import { writable } from 'svelte/store';
 
-// Create and export the user store
-export const userStore = writable(null);
+const userStore = writable(null);
+
+export default userStore;

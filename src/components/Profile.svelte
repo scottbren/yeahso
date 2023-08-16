@@ -1,6 +1,5 @@
 <script context="module">
     export async function load({ params }) {
-        console.log("Params:", params);  // Debug
         return { props: { userId: params.userId } };
     }
 </script>
@@ -13,31 +12,15 @@
     let disagreements = [];
     let agreements = [];
 
-          // Function to generate random values
-          function getRandomValue(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-    function generateRandomBinary(length) {
-        let binaryString = '';
-        for (let i = 0; i < length; i++) {
-        binaryString += Math.random() < 0.5 ? '0' : '1';
-        }
-        return binaryString;
-    }
-
     onMount(async () => {
         try {
-            const userResponse = await fetch(`/api/users/${userId}`);
-            if (!userResponse.ok) throw new Error(`Error fetching user: ${userResponse.statusText}`);
-            user = await userResponse.json();
-
-            // Use the new endpoint for votes
             const userVotesResponse = await fetch(`/api/users/${userId}/votes`);
             if (!userVotesResponse.ok) throw new Error(`Error fetching votes: ${userVotesResponse.statusText}`);
-            const userVotes = await userVotesResponse.json();
+            const data = await userVotesResponse.json();
+
+            user = data[0]?.user || {};
             
-            // Fetch topic details for each user vote and populate the arrays
-            for (const vote of userVotes) {
+            for (const vote of data) {
                 const topicResponse = await fetch(`/api/topics/${vote.topicId}`);
                 if (!topicResponse.ok) throw new Error(`Error fetching topic: ${topicResponse.statusText}`);
                 const topicDetails = await topicResponse.json();
@@ -48,92 +31,72 @@
                     agreements = [...agreements, {...topicDetails, ...vote}];
                 }
             }
-            console.log("User data:", user);
-            console.log("Disagreements:", disagreements);
-            console.log("Agreements:", agreements);
 
         } catch (err) {
             console.error("Error:", err.message);
         }
     });
 
-
 </script>
 
-
-
-
-
-
-<div class="matrix">
-    {#each Array.from({ length: 1000 }) as _, index}
-        <div class="matrix-line" style="top: {getRandomValue(0, 100)}%">
-            {generateRandomBinary(1000)} <!-- Longer binary strings -->
-        </div>
-    {/each}
-</div>
-
 <div class="profile">
-  <div class="profile-header">
-      <div class="profile-picture">
-          <img src={user.profilePicture} alt="Profile" />
-      </div>
-      <h2>{user.username}</h2>
-  </div>
-  <div class="profile-content">
-      <div class="column">
-          <h3>Disagreements</h3>
-          {#each disagreements as disagreement}
-              <div class="card">
-                  <p>{disagreement.title}</p>
-              </div>
-          {/each}
-      </div>
-      <div class="column">
-          <h3>Agreements</h3>
-          {#each agreements as agreement}
-              <div class="card">
-                  <p>{agreement.title}</p>
-              </div>
-          {/each}
-      </div>
-  </div>
+    <div class="profile-header">
+        <div class="profile-picture">
+            <img src={user.profilePicture} alt="Profile" />
+        </div>
+        <h2>{user.username}</h2>
+    </div>
+    <div class="profile-content">
+        <div class="column">
+            <h3>Disagreements</h3>
+            {#each disagreements as disagreement}
+                <div class="card">
+                    <p>{disagreement.title}</p>
+                </div>
+            {/each}
+        </div>
+        <div class="column">
+            <h3>Agreements</h3>
+            {#each agreements as agreement}
+                <div class="card">
+                    <p>{agreement.title}</p>
+                </div>
+            {/each}
+        </div>
+    </div>
 </div>
 
 <style>
     :root {
-        --gradient: linear-gradient(135deg, #21f034);
-        --secondary-color: #000;
-        --neutral-dark: #333;
-        --neutral-light: #aaa;
-        --font: 'Courier New', Courier, monospace;
-        --neon-green: #21f034;
-        --neon-orange: #ff6b6b;
+        --background-color: #2B2632;
+        --gradient-start: #D23D58;
+        --gradient-end: #FFD53F;
+        --transition-speed: 0.3s;
+        --font: 'Jockey One', sans-serif;
     }
     
     body {
         font-family: var(--font);
-        background: var(--secondary-color);
+        background-color: var(--background-color);
         margin: 0;
         padding: 0;
     }
-    
+
     .profile {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 50px;
         padding: 60px 0;
-        background: rgba(0, 0, 0, 0.7); /* 80% opaque so that matrix effect is visible behind */
-        background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px);
+        background: var(--background-color);
     }
     
     .profile-header {
-        background: var(--gradient);
+        background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
         padding: 30px;
         border-radius: 20px;
         text-align: center;
-        box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
     .profile-picture {
@@ -142,7 +105,7 @@
         border-radius: 50%;
         overflow: hidden;
         margin-bottom: 20px;
-        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1), 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     }
     
     .profile-picture img {
@@ -153,7 +116,7 @@
     
     h2, h3 {
         font-size: 2em;
-        color: var(--neon-green);
+        color: #C9C9C9;
         margin: 0;
         font-family: var(--font);
     }
@@ -163,10 +126,9 @@
         gap: 50px;
         width: 90%;
         max-width: 1100px;
-        background: var(--neutral-dark);
+        background: var(--background-color);
         padding: 20px;
         border-radius: 10px;
-        
     }
     
     .column {
@@ -175,58 +137,32 @@
         flex-direction: column;
         gap: 20px;
         align-items: center;
-        
     }
     
     h3 {
         font-size: 1.6em;
-        border-bottom: 2px solid var(--neon-green);
+        border-bottom: 2px solid var(--gradient-start);
         padding-bottom: 10px;
+        margin-bottom: 20px;
+        width: 100%;
+        text-align: left;
     }
-    
+
     .card {
-        padding: 20px;
-        background: var(--neutral-dark);
-        border-radius: 20px;
-        box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
-        font-size: 1.2em;
-        transition: transform 0.3s, box-shadow 0.3s;
+        background: #191716;
+        padding: 15px 25px;
+        border-radius: 10px;
+        width: 100%;
+        transition: transform var(--transition-speed);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     }
-    
+
     .card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
     }
 
-    /* MATRIX EFFECT STYLES */
-.matrix {
-    position: absolute;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    color: var(--neon-green);
-    z-index: -1; /* Make it sit behind your content */
-    animation: matrixFall 5s linear infinite;
-
-}
-
-.matrix .matrix-line {
-    animation: matrixFall infinite; /* Ensure it keeps looping */
-}
-    
-    @keyframes flicker {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+    .card p {
+        margin: 0;
+        color: #C9C9C9;
     }
-
-    @keyframes matrixFall {
-    0% {
-        transform: translateY(-100%);
-    }
-    100% {
-        transform: translateY(0%);
-    }
-}
-
-    </style>
-    
+</style>

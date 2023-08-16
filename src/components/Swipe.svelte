@@ -1,320 +1,308 @@
 <script>
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
+    import { session } from "../stores";
+    import { page } from "$app/stores";
+
+    let userId;
+    if ($page.data.session) {
+        userId = $page.data.session.user.id;
+        console.log("swipe session", $page.data.session.user);
+    }
 
     let topics = [];
     let currentTopic = null;
     let itemsAgree = [];
     let itemsDisagree = [];
     let currentCardIndex = 0;
-
-    $: if (currentCardIndex !== null && topics.length) {
-        loadCurrentTopicData();
-    }
+ 
 
     onMount(async () => {
-        const response = await fetch('/api/topics');
-        topics = await response.json();
+        $page.data.session.user && (userId = $page.data.session.user.id);
+
+        const topicsResponse = await fetch(`/api/topics`);
+        topics = await topicsResponse.json();
+
         if (topics.length > 0) {
-            loadCurrentTopicData();
+            await loadCurrentTopicData();
         }
     });
 
+    function setCurrentTopic() {
+        if (currentCardIndex !== null && currentCardIndex < topics.length) {
+            currentTopic = topics[currentCardIndex];
+        }
+    }
+
     async function loadCurrentTopicData() {
         currentTopic = topics[currentCardIndex];
-        
-        const votesResponse = await fetch(`/api/topics/${currentTopic._id}/votes`);
+
+        const [votesResponse, usersResponse] = await Promise.all([
+            fetch(`/api/topics/${currentTopic._id}/votes`),
+            fetch(`/api/users`)
+        ]);
+
         const votesData = await votesResponse.json();
-        const userIds = [...new Set(votesData.map(vote => vote.userId))];
-
-        const usersResponse = await fetch(`/api/users?ids=${userIds.join(",")}`);
+        const userIds = [...new Set(votesData.votes.map(vote => vote.userId))];
         const usersData = await usersResponse.json();
-
         const userIdToUserMap = usersData.reduce((acc, user) => {
-            acc[user._id] = user;
+            const idToUse = user.twitterId || user._id;
+            acc[idToUse] = user;
             return acc;
         }, {});
 
-        itemsAgree = votesData.filter(vote => vote.vote === 'agree').map(vote => userIdToUserMap[vote.userId]);
-        itemsDisagree = votesData.filter(vote => vote.vote === 'disagree').map(vote => userIdToUserMap[vote.userId]);
-    }
-    
-  let start = null;
-  let cardOffset = 0;
-  let cardTransition = "";
-  let dragging = false;
-  
-  function navigateToDetails(currentTopic) {
-    goto(`/details/${currentTopic._id}`);
-  }
+        itemsAgree = votesData.votes.filter(vote => vote.vote === 'agree').map(vote => {
+            if (!userIdToUserMap[vote.userId]) {
+                console.warn("Missing user data for userId:", vote.userId);
+                return null;
+            }
+            return userIdToUserMap[vote.userId];
+        }).filter(Boolean);
 
-      // Function to generate random values
-      function getRandomValue(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-    function generateRandomBinary(length) {
-        let binaryString = '';
-        for (let i = 0; i < length; i++) {
-        binaryString += Math.random() < 0.5 ? '0' : '1';
+        itemsDisagree = votesData.votes.filter(vote => vote.vote === 'disagree').map(vote => {
+            if (!userIdToUserMap[vote.userId]) {
+                console.warn("Missing user data for userId:", vote.userId);
+                return null;
+            }
+            return userIdToUserMap[vote.userId];
+        }).filter(Boolean);
+
+        topics = topics.filter(topic => topic._id !== currentTopic._id);
+        
+        if (!topics.length) {
+            console.log("No more topics to vote on.");
+            currentTopic = null;  // hide the current topic card
         }
-        return binaryString;
+    }
+
+    async function registerVote(voteType) {
+        if (!currentTopic || !$page.data.session.user) return;
+
+        userId = $page.data.session.user.id;
+
+        const response = await fetch(`/api/topics/${currentTopic._id}/votes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                topicId: currentTopic._id,
+                userId: userId,
+                vote: voteType,
+            })
+        });
+
+        if (response.ok) {
+            console.log("Vote registered successfully");
+        } else {
+            console.error("Error registering vote", await response.text());
+        }
     }
 
 
-  function swipeLeft() {
-    console.log("swipeLeft triggered");
-    cardTransition = "transform 0.5s ease-out";
-    cardOffset = -window.innerWidth;
-    setTimeout(() => {
-        currentCardIndex++;
-        console.log("Updated currentCardIndex after swipeLeft:", currentCardIndex);
+    function transitionCard(direction) {
+        cardTransition = "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)";
+        cardOffset = direction === 'left' ? -window.innerWidth : window.innerWidth;
+        setTimeout(() => {
+            currentCardIndex++;
+            if (currentCardIndex >= topics.length) {
+                currentCardIndex = 0; 
+            }
+            cardOffset = 0;
+            cardTransition = "";
+            currentCardIndex++;
+            if (currentCardIndex < topics.length) {
+                loadCurrentTopicData();
+            } else {
+                currentTopic = null;
+                console.log("No more topics to vote on.");
+            }
+        }, 500);
+    }
+
+    async function swipeLeft() {
+        await registerVote('disagree');
+        transitionCard('left');
+    }
+
+    async function swipeRight() {
+        await registerVote('agree');
+        transitionCard('right');
+    }
+
     
-        cardOffset = 0;
-        cardTransition = "";
-        loadCurrentTopicData();
-    }, 500);
-}
-
-function swipeRight() {
-    console.log("swipeRight triggered");
-    cardTransition = "transform 0.5s ease-out";
-    cardOffset = window.innerWidth;
-    setTimeout(() => {
-        currentCardIndex++;
-        console.log("Updated currentCardIndex after swipeRight:", currentCardIndex);
-
-        cardOffset = 0;
-        cardTransition = "";
-        loadCurrentTopicData();
-    }, 500);
-}
-
-
-
-function startSwipe(event) {
-    dragging = true;
-    start = event.clientX;
-    cardTransition = "";
-}
-
-function swipe(event) {
-    if (!dragging) return;
-    cardOffset = event.clientX - start;
-}
-
-
-function agreeAction() {
-    swipeRight();
-}
-
-function disagreeAction() {
-    swipeLeft();
-}
-
-
-function endSwipe() {
-    dragging = false;
-
-    const threshold = window.innerWidth / 3;
-
-    if (cardOffset < -threshold) {
-        swipeLeft();
-    } else if (cardOffset > threshold) {
-        swipeRight();
-    } else {
-        cardOffset = 0;
-        cardTransition = "transform 0.5s ease-out";
-    }
-}
-
-
-
+    let cardOffset = 0;
+    let cardTransition = "";
 </script>
 
-<div class="matrix">
-    {#each Array.from({ length: 1000 }) as _, index}
-        <div class="matrix-line" style="top: {getRandomValue(0, 100)}%">
-            {generateRandomBinary(1000)} <!-- Longer binary strings -->
-        </div>
-    {/each}
-</div>
-  
 <div class="swiper">
     {#if currentTopic}
-    <div class="topic-card"
-         style="transform: translateX({cardOffset}px) rotateY({cardOffset / 20}deg); transition: {cardTransition};"
-         on:mousedown={startSwipe}
-         on:mousemove={swipe}
-         on:mouseup={endSwipe}
-    >
+    <div class="topic-card" style="transform: translateX({cardOffset}px) rotateY({cardOffset / 20}deg); transition: {cardTransition};">      
         <p>{currentTopic.title}</p>
         <div class="buttons-container">
-            <button class="disagree-button" on:click={swipeLeft}>Disagree</button>
-            <button class="details-button" on:click={() => navigateToDetails(currentTopic)}>Details</button>
-            <button class="agree-button" on:click={swipeRight}>Agree</button>
+            <button class="disagree-button" on:click={swipeLeft}>❌</button>
+            <button class="agree-button" on:click={swipeRight}>✅</button>
         </div>
     </div>
+    {:else}
+    <p>No new topics available for voting.</p>
     {/if}
     <div class="columns-container">
-      <div class="disagree-column column">
-        <h3>Disagree</h3>
-        {#each itemsDisagree as user}
-          <img src={user.profilePicture} alt="{user.username} profile picture" class="profile-pic"/>
-        {/each}
-      </div>
-      <div class="agree-column column">
-        <h3>Agree</h3>
-        {#each itemsAgree as user}
-          <img src={user.profilePicture} alt="{user.username} profile picture" class="profile-pic"/>
-        {/each}
-      </div>
+        <div class="column-container">
+            <div class="disagree-column column">
+                <h3>Disagree</h3>
+                {#each itemsDisagree as item (item._id)}
+                <div class="user">
+                    <img src={item.profileImageUrl} alt="user-avatar" />
+                    <p>{item.username}</p>
+                </div>
+                {/each}
+            </div>
+            <div class="agree-column column">
+                <h3>Agree</h3>
+                {#each itemsAgree as item (item._id)}
+                <div class="user">
+                    <img src={item.profileImageUrl} alt="user-avatar" />
+                    <p>{item.username}</p>
+                </div>
+                {/each}
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+
+
   
   
   <style>
-:root {
-    --card-bg-gradient: linear-gradient(135deg, #21f034);
-    --secondary-color: #000;
-    --neutral-dark: #333;
-    --neutral-light: #aaa;
-    --font: 'Courier New', Courier, monospace;
-    --neon-green: #21f034;
-    --neon-orange: #ff6b6b;
-}
+    :root {
+        --background-color: #2B2632;
+        --gradient-start: #D23D58;
+        --gradient-end: #FFD53F;
+        --transition-speed: 0.3s;
+        --font: 'Jockey One', sans-serif;
+    }
+    
+    body, h1, p, button {
+        font-family: var(--font);
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        background-color: var(--background-color);
+        background-image: radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent); /* Slight background texture */
+    }
 
-body {
-    font-family: var(--font);
-    background: var(--secondary-color);
-    color: var(--neon-green);
-}
+    .swiper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+    }
+    
+    .topic-card {
+        width: 650px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        margin-top: 25px;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+        margin-bottom: 15px;
+        height: 450px;
+        padding-top: 40px;
+        font-size: 60px;
+        color: #C9C9C9;
+        text-align: center;  
+    }
+    
+    .buttons-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
 
-.swiper {
+    
+    .disagree-button, .agree-button {
+        width: 50%;  
+        background: rgba(217, 217, 217, 0.5);  
+        padding-top: 30px;
+        padding-bottom: 30px;
+        font-size: 80px;
+    }
+        
+    button {
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        background: var(--background-color);
+        color: var(--gradient-start);
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        outline: none;
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Intensified shadow on hover */
+    }
+    
+    .columns-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-    background: rgba(0, 0, 0, 0.7); /* 80% opaque so that matrix effect is visible behind */
-    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px);
-}
-
-/* MATRIX EFFECT STYLES */
-.matrix {
-    position: absolute;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    color: var(--neon-green);
-    z-index: -1; /* Make it sit behind your content */
-    animation: matrixFall 5s linear infinite;
-
-}
-
-.matrix .matrix-line {
-    animation: matrixFall infinite; /* Ensure it keeps looping */
-}
-
-.topic-card {
-    width: 650px;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 3px), var(--card-bg-gradient);
-    color: white;
-    box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
-    transition: transform 0.2s;
-    margin-bottom: 15px;
-    margin-top: 25px;
-    padding: 40px 30px;
-    height: 450px;
-    font-size: 1.8em;
-    font-family: var(--font);
-    transform-origin: center center;
-}
-
-.buttons-container {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-}
-
-button {
-    font-family: var(--font);
-    padding: 12px 24px;
-    border: 3px solid var(--neon-green);
-    border-radius: 25px;
-    font-size: 1.1em;
-    background-color: transparent;
-    color: var(--neon-green);
-    cursor: pointer;
-    outline: none;
-    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    box-shadow: none;
-    transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
-
-}
-
-button:hover {
-    background-color: var(--neon-green);
-    color: var(--dark-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
-}
-
-.columns-container {
-    display: flex;
+    flex-direction: column; /* changed to column to stack child elements vertically */
     justify-content: space-between;
     width: 650px;
-    height: calc(100vh - 300px);
-    background: var(--neutral-dark);
+    background: #3C3C3C;
     padding: 20px;
     border-radius: 10px;
-}
-
-.column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 275px;
-    align-items: center;
-}
-
-.column h3 {
-    font-size: 1.5em;
-    margin-bottom: 30px;
-    color: var(--neon-green);
-    font-family: var(--font);
-}
-
-.profile-pic {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1), 0 0 10px var(--neon-green), 0 0 30px var(--neon-green);
-}
-
-@keyframes flicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-
-@keyframes matrixFall {
-    0% {
-        transform: translateY(-100%);
     }
-    100% {
-        transform: translateY(0%);
+
+    .column-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%; /* make the container take full width of the parent */
     }
-}
 
+    .column {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 275px;
+        align-items: center;
+    }
 
-</style>
+    .details-button {
+        align-self: center; /* Center the button in the .columns-container */
+        margin-top: 20px;  /* Add some top margin for spacing */
+    }
+
+    
+    .column h3 {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+        color: var(--gradient-start);
+    }
+    
+    .profile-pic {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .user-container {
+      display: grid;  
+      grid-template-columns: repeat(3, 1fr); 
+      gap: 10px;
+      align-items: center;
+  }
+    
+    </style>
+    

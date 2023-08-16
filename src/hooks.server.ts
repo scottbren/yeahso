@@ -1,6 +1,7 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
 import Twitter from "@auth/core/providers/twitter";
 import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "$env/static/private";
+import userStore from './userStore';
 
 export const handle = SvelteKitAuth({
   providers: [
@@ -11,6 +12,18 @@ export const handle = SvelteKitAuth({
     })
   ],
   callbacks: {
+    
+    async session({ session, token }) {
+      // Ensure token is defined
+      if (token && token.sub) {
+        console.log("setting session")
+        session.user.id = token.sub;  // Assuming you want to attach the sub as user's id
+      } else {
+        console.error("Token is undefined or missing sub property");
+      }
+      
+      return session;
+    },
     async signIn({ profile }) {
       // Check if profile is undefined before proceeding
       if (!profile) {
@@ -26,12 +39,14 @@ export const handle = SvelteKitAuth({
         image: profile.data.profile_image_url,
         // any other necessary attributes
       };
+      
+
       console.log("userData: ", userData)
 
       // Make an API call to save the user data in the DB using global `fetch`.
       // Ensure the URL is absolute.
       let id = userData.id;
-      const response = await fetch(`http://172.17.64.1:5173/api/users/twitter/${id}`, { 
+      const response = await fetch(`http://172.20.0.1:5173/api/users/twitter/${id}`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,15 +56,18 @@ export const handle = SvelteKitAuth({
       
       const responseData = await response.json();
       console.log("response: ", responseData)
-      
+
+
       // Check if the response is successful.
       if (!response.ok) {
         console.log(response)
         console.error("Failed to save user data in our database.");
         return false;  // Indicate an error occurred during sign-in.
       }
-
-      return true;  // Indicate a successful sign-in.
-    }
+      return {
+        success: true,
+        userData: responseData._id, // or just a user token
+      };
+    },
   }
 });

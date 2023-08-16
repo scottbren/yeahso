@@ -15,14 +15,17 @@ async function createUserFromTwitterProfile(db, profile) {
     // If user doesn't exist, create them.
     console.log("user doesn't exist, adding");
     const newUser = {
+        _id: null,
         twitterId: profile.id,
         name: profile.name,
         username: profile.username,
-        profileImageUrl: profile.profile_image_url,
+        profileImageUrl: profile.image,
             // ... any other data you want to store
     };
-    await db.collection('users').insertOne(newUser);
-    console.log("added.");
+    console.log("profilfe: ", profile)
+    const response = await db.collection('users').insertOne(newUser);
+    console.log("added.", response);
+
 
     return newUser; // Returning the newly created user
 }
@@ -47,6 +50,7 @@ export async function POST(event) {
         console.log("checking if user exists");
         let user = await getUserByTwitterId(db, profile.id);
 
+
         if (!user) {
             console.log("user doesn't exist, adding now");
             user = await createUserFromTwitterProfile(db, profile);
@@ -55,9 +59,10 @@ export async function POST(event) {
         // Return a new instance of the Response object
         return new Response(JSON.stringify(user), {
             status: 200,
+            userId: user._id, // assuming MongoDB's unique ID is `_id`
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+            },
         });
 
     } catch (error) {
