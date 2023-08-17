@@ -27,20 +27,29 @@
         return;
     }
     const { votes, users } = await votesResponse.json();
-
+    console.log({votes, users})
     // Create a mapping of userId to user details for easy lookup
     const userIdToUserDetailsMap = users.reduce((acc, user) => {
         acc[user._id] = user;
+        acc[user.twitterId] = user;  // Also map using twitterId
         return acc;
     }, {});
 
+
     // Split votes into agree and disagree using the detailed map
     itemsAgree = votes
-        .filter(vote => vote.vote === 'agree')
-        .map(vote => userIdToUserDetailsMap[vote.userId]);
+    .filter(vote => vote.vote === 'agree')
+    .map(vote => userIdToUserDetailsMap[vote.userId])
+    .filter(user => user);  // Ensure no undefined values
+
     itemsDisagree = votes
         .filter(vote => vote.vote === 'disagree')
-        .map(vote => userIdToUserDetailsMap[vote.userId]);
+        .map(vote => userIdToUserDetailsMap[vote.userId])
+        .filter(user => user);  // Ensure no undefined values
+
+
+        console.log("itemsAgree", itemsAgree);
+        console.log("itemsDisagree", itemsDisagree);
 
 });
 
@@ -53,8 +62,8 @@
     <div class="columns-container">
         <div class="disagree-column column">
             <h3>Disagree</h3>
-            {#each itemsDisagree as user (user._id)}
-            <a href="/profile/{user._id}"> 
+            {#each itemsDisagree as user (user?._id)}
+            <a href="/profile/{user.twitterId}"> 
                 <div class="card">
                     <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
                     <p>{user.username}</p>
@@ -65,8 +74,8 @@
         
         <div class="agree-column column">
             <h3>Agree</h3>
-            {#each itemsAgree as user (user._id)}
-            <a href="/profile/{user._id}">
+            {#each itemsAgree as user (user?._id)}
+            <a href="/profile/{user.twitterId}">
                 <div class="card">
                     <img src="{user.profilePicture}" alt="{user.username}'s profile picture" class="profile-pic" />
                     <p>{user.username}</p>

@@ -33,7 +33,6 @@ async function createUserFromTwitterProfile(db, profile) {
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST(event) {
     try {
-        console.log("test2");
         const db = await connectToDb();
         // Convert the ReadableStream to text or JSON
 
@@ -45,7 +44,6 @@ export async function POST(event) {
         }
         const profile = JSON.parse(data);
         console.log("profile req: ", profile)
-        console.log(event.request)
 
         console.log("checking if user exists");
         let user = await getUserByTwitterId(db, profile.id);
@@ -59,7 +57,6 @@ export async function POST(event) {
         // Return a new instance of the Response object
         return new Response(JSON.stringify(user), {
             status: 200,
-            userId: user._id, // assuming MongoDB's unique ID is `_id`
             headers: {
                 'Content-Type': 'application/json',
             },

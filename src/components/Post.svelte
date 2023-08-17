@@ -1,8 +1,15 @@
 <script>
-    let topicTitle = '';
     let topicDescription = '';
+    let isSuccess = false;
+    let isError = false;
+    let errorMessage = '';
+
 
     const submitTopic = async () => {
+    isSuccess = false;
+    isError = false;
+    errorMessage = '';
+
     if (topicDescription.trim()) {
         try {
             const response = await fetch('/api/topics', {
@@ -17,16 +24,21 @@
 
             if (response.ok) {
                 const result = await response.json();
-                console.log(result); // Handle success, maybe navigate to the created topic or show a success message
+                console.log(result);
+                isSuccess = true;
             } else {
                 const error = await response.json();
-                console.error(error.message || 'Error submitting topic');
+                isError = true;
+                errorMessage = error.message || 'Error submitting topic';
             }
         } catch (error) {
+            isError = true;
+            errorMessage = 'Network error';
             console.error('Network error:', error);
         }
     }
 };
+
 
 </script>
 
@@ -41,6 +53,13 @@
         </div>
 
         <button on:click={submitTopic} class="submit-btn">Post ($5)</button>
+        
+    {#if isSuccess}
+    <div class="feedback success">Topic successfully submitted!</div>
+    {/if}
+    {#if isError}
+        <div class="feedback error">{errorMessage}</div>
+    {/if}
     </div>
 </div>
 
@@ -125,5 +144,27 @@
     .submit-btn:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+
     }
+
+    .feedback {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    }
+
+    .success {
+        background-color: rgba(0, 255, 0, 0.1);
+        border: 1px solid rgba(0, 255, 0, 0.3);
+        color: #00cc00;
+    }
+
+    .error {
+        background-color: rgba(255, 0, 0, 0.1);
+        border: 1px solid rgba(255, 0, 0, 0.3);
+        color: #ff3333;
+    }
+
 </style>

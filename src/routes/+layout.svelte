@@ -1,26 +1,24 @@
 <script lang="ts">
-  import { page } from "$app/stores"
-  if($page.data.session) {
-    console.log("layout session", $page.data.session.user)
+  import { page } from "$app/stores";
+
+  let authenticated = false;
+
+  try {
+    if($page.data.session?.user) {
+      authenticated = true;
+      console.log("layout session", $page.data.session);
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
   }
-
-  import { session } from '../stores';
-
-  let sessionData;
-  session.subscribe(value => {
-      sessionData = value;
-  });
-  console.log("sessiondata", sessionData)
 </script>
-
 
 
 <div>
   <header>
     <div class="signedInStatus">
       <p class="nojs-show loaded">
-        {#if $page.data.session}
-          {#if $page.data.session.user?.image}
+        {#if $page.data.session && $page.data.session.user}          {#if $page.data.session.user?.image}
             <span
               style="background-image: url('{$page.data.session.user.image}')"
               class="avatar"
@@ -51,7 +49,9 @@
     
     
   </header>
+
   <slot />
+
 </div>
 
 <style>

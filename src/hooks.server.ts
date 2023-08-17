@@ -1,7 +1,7 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
 import Twitter from "@auth/core/providers/twitter";
+import { connectToDb } from './db.js';  // Assuming you have this method to connect to the database
 import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "$env/static/private";
-import userStore from './userStore';
 
 export const handle = SvelteKitAuth({
   providers: [
@@ -11,63 +11,85 @@ export const handle = SvelteKitAuth({
       checks: ["pkce", "state"],
     })
   ],
+  session: {
+    strategy: "jwt"
+  },
   callbacks: {
-    
-    async session({ session, token }) {
-      // Ensure token is defined
-      if (token && token.sub) {
-        console.log("setting session")
-        session.user.id = token.sub;  // Assuming you want to attach the sub as user's id
-      } else {
-        console.error("Token is undefined or missing sub property");
-      }
-      
-      return session;
-    },
     async signIn({ profile }) {
-      // Check if profile is undefined before proceeding
       if (!profile) {
         console.error("Profile is undefined");
         return false;
       }
-      console.log("profile: ", profile.data)
-      // Prepare the user data.
-      const userData = {
-        id: profile.data.id,
-        name: profile.data.name,
-        username: profile.data.username,
-        image: profile.data.profile_image_url,
-        // any other necessary attributes
-      };
-      
-
-      console.log("userData: ", userData)
-
-      // Make an API call to save the user data in the DB using global `fetch`.
-      // Ensure the URL is absolute.
-      let id = userData.id;
-      const response = await fetch(`http://172.20.0.1:5173/api/users/twitter/${id}`, { 
+    
+      const response = await fetch(`http://172.28.64.1:5173/api/users/twitter/${profile.data.id}`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(profile.data),
       });
-      
-      const responseData = await response.json();
-      console.log("response: ", responseData)
-
-
-      // Check if the response is successful.
+    
       if (!response.ok) {
-        console.log(response)
         console.error("Failed to save user data in our database.");
-        return false;  // Indicate an error occurred during sign-in.
+        return false;
       }
+
+      // Once the user data is saved, fetch the complete user profile from your database
+      const db = await connectToDb();
+      const user = await db.collection("users").findOne({ twitterId: profile.data.id });
+
+      if (!user) {
+        console.error("User not found in database after signIn.");
+        return false;
+      }
+
+      // Convert the _id to a string for easier handling
+      user._id = user._id.toString();
+      console.log("customData in signIn:", { userProfile: user });
+      profile.customData = { userProfile: user };
       return {
-        success: true,
-        userData: responseData._id, // or just a user token
+        ...profile,
+        customData: { userProfile: user }
       };
+      
     },
+    async jwt({ token, account, profile }) {
+      console.log("Full profile in jwt:", profile);
+      console.log("account:", account)
+      if (account) {
+          token.accessToken = account.access_token;
+          token.id = profile.id;
+          //token.customData = profile.customData;  // Ensure customData is added to token
+      }
+      //console.log("customData in jwt:", profile.customData);
+      return token;
+    },
+  
+    
+    async session({ session, token, user }) {
+      console.log(session);
+      console.log("Token in session callback:", token);
+
+      if (token) {
+        session.user.twitterId = token.sub;
+        session.user._id = token._id;
+        console.log("user.customData", user);
+    
+        // Extract customData from token and add to session
+        if (token.customData) {
+          session.customData = token.customData;
+        }
+    
+        // If you specifically want the userProfile
+        if (token.customData && token.customData.userProfile) {
+          session.userProfile = token.customData.userProfile;
+        }
+        //console.log("customData in session:", token.customData);
+      } else {
+        console.error("Token is undefined or missing sub property");
+      }
+      return session;
+    }
+    
   }
 });

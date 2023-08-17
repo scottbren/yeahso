@@ -1,10 +1,14 @@
-export async function handleRequest({ request, resolve }) {
-    const response = await resolve(request);
-  
-    // Check if the user ID exists, then set the cookie
-    if (response.userData) {
-      response.headers['set-cookie'] = `userID=${response.userData._id}; HttpOnly=false; secure=false; Path=/; SameSite=Lax`;
-    }
-  
-    return response;
+// src/hooks.js
+
+export function handle({ request, resolve }) {
+  const session = request.locals.session;
+
+  if (!session?.user && request.path !== '/' && !request.path.startsWith('/auth')) {
+      return {
+          status: 303,
+          redirect: '/'
+      };
   }
+
+  return resolve(request);
+}

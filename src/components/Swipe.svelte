@@ -1,30 +1,31 @@
 <script>
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import { session } from "../stores";
     import { page } from "$app/stores";
 
-    let userId;
-    if ($page.data.session) {
-        userId = $page.data.session.user.id;
-        console.log("swipe session", $page.data.session.user);
-    }
 
+    let userId = $page?.data?.session?.user?.id;
     let topics = [];
     let currentTopic = null;
     let itemsAgree = [];
     let itemsDisagree = [];
     let currentCardIndex = 0;
  
-
     onMount(async () => {
-        $page.data.session.user && (userId = $page.data.session.user.id);
+        if (!$page.data.session?.user) return;
 
-        const topicsResponse = await fetch(`/api/topics`);
-        topics = await topicsResponse.json();
+        try {
+            const topicsResponse = await fetch(`/api/topics`);
+            if (!topicsResponse.ok) {
+                throw new Error("Error fetching topics");
+            }
+            topics = await topicsResponse.json();
 
-        if (topics.length > 0) {
-            await loadCurrentTopicData();
+            if (topics.length > 0) {
+                await loadCurrentTopicData();
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
         }
     });
 
@@ -141,10 +142,8 @@
         <p>{currentTopic.title}</p>
         <div class="buttons-container">
             <button class="disagree-button" on:click={swipeLeft}>❌</button>
-            <button class="more-button" on:click={navigateToDetails}>More</button>
             <button class="agree-button" on:click={swipeRight}>✅</button>
         </div>
-        
     </div>
     {:else}
     <p>No new topics available for voting.</p>
@@ -160,6 +159,8 @@
                 </div>
                 {/each}
             </div>
+            <button class="more-button" on:click={navigateToDetails}>More</button>
+
             <div class="agree-column column">
                 <h3>Agree</h3>
                 {#each itemsAgree as item (item._id)}
@@ -206,6 +207,7 @@
 
     /* Styles for the 'more' button */
     .swiper .more-button {
+        margin-bottom: 10px;  /* Add some spacing below the button */
         padding: 10px 20px;
         border-radius: 5px;
         border: none;

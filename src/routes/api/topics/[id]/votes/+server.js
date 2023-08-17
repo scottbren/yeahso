@@ -37,21 +37,19 @@ export async function GET(request) {
         console.log(votes)
         if (votes.length > 0) {
             response.votes = votes;
-
-            // Extract user IDs from votes and fetch user details
-
-
-            const validUserIds = votes
-            .map(vote => vote._id)
-            .filter(Boolean) 
-            .filter(id => ObjectId.isValid(id));
         
-        const objectIdUserIds = validUserIds.map(id => new ObjectId(id));
-        const users = await db.collection('users').find({ _id: { $in: objectIdUserIds } }).toArray();
-        if (users.length > 0) {
-                response.users = users;
-            }
-        } else {
+            // Extract user IDs from votes and fetch user details
+            const validUserIds = votes.map(vote => vote.userId).filter(Boolean);
+        
+            // Separate ObjectID userIds and twitterId userIds
+            const objectIdUserIds = validUserIds.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
+            const twitterIds = validUserIds.filter(id => !ObjectId.isValid(id));
+        
+            const usersById = await db.collection('users').find({ _id: { $in: objectIdUserIds } }).toArray();
+            const usersByTwitterId = await db.collection('users').find({ twitterId: { $in: twitterIds } }).toArray();
+        
+            response.users = [...usersById, ...usersByTwitterId];
+        }  else {
             response.message = 'No votes found for this topic';
         }
 

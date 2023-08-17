@@ -17,10 +17,11 @@
             const userVotesResponse = await fetch(`/api/users/${userId}/votes`);
             if (!userVotesResponse.ok) throw new Error(`Error fetching votes: ${userVotesResponse.statusText}`);
             const data = await userVotesResponse.json();
-
-            user = data[0]?.user || {};
+            console.log(data)
+            user = data?.user || {};
+            console.log("profile user", user)
             
-            for (const vote of data) {
+            for (const vote of data.votes) {
                 const topicResponse = await fetch(`/api/topics/${vote.topicId}`);
                 if (!topicResponse.ok) throw new Error(`Error fetching topic: ${topicResponse.statusText}`);
                 const topicDetails = await topicResponse.json();

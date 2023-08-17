@@ -50,9 +50,9 @@ export async function POST(request) {
         const data = JSON.parse(dataString);
         
         // You should define newTopic first before using it
-        const { title } = data;
+        const { description } = data;
         const newTopic = {
-            title
+            title: description
         };
 
         // Inserting the data into the database
