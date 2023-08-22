@@ -112,7 +112,7 @@
     .input-field {
         padding: 10px 20px;
         padding-bottom: 250px;
-        font-size: 1em;
+        font-size: 5em;
         border: none; /* Remove the border */
         border-radius: 20px;
         background: rgba(0,0,0,0.2); /* Slight transparency */

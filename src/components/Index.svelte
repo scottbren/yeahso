@@ -1,10 +1,5 @@
 <script>
-    import { goto } from '$app/navigation';
-
-    function navigateToApp() {
-      goto('/auth/signin');
-    }
-    
+    import { signIn } from "@auth/sveltekit/client"
 </script>
 
 
@@ -12,7 +7,7 @@
     <div class="content">
         <h1><span class="brand">Yeahso</span></h1>
         <p>The modern platform for debating conspiracy theories. Discover, engage, and voice your opinions.</p>
-        <button on:click={navigateToApp}>Get Started</button>
+        <button on:click={() => signIn("twitter")}>Sign in with Twitter</button>
     </div>
 </div>
 
@@ -72,7 +67,7 @@
     
     /* Button Styling */
     button {
-        padding: 15px 35px;
+        padding: 25px 35px;
         font-size: 1.1rem;
         background: var(--background-color);
         color: var(--gradient-start);

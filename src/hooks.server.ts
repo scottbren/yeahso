@@ -11,9 +11,6 @@ export const handle = SvelteKitAuth({
       checks: ["pkce", "state"],
     })
   ],
-  session: {
-    strategy: "jwt"
-  },
   callbacks: {
     async signIn({ profile }) {
       if (!profile) {
@@ -21,7 +18,7 @@ export const handle = SvelteKitAuth({
         return false;
       }
     
-      const response = await fetch(`http://172.28.64.1:5173/api/users/twitter/${profile.data.id}`, { 
+      const response = await fetch(`http://172.30.0.1:5173/api/users/twitter/${profile.data.id}`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,39 +50,20 @@ export const handle = SvelteKitAuth({
       };
       
     },
-    async jwt({ token, account, profile }) {
-      console.log("Full profile in jwt:", profile);
-      console.log("account:", account)
-      if (account) {
-          token.accessToken = account.access_token;
-          token.id = profile.id;
-          //token.customData = profile.customData;  // Ensure customData is added to token
-      }
-      //console.log("customData in jwt:", profile.customData);
-      return token;
-    },
-  
     
     async session({ session, token, user }) {
       console.log(session);
       console.log("Token in session callback:", token);
 
-      if (token) {
-        session.user.twitterId = token.sub;
-        session.user._id = token._id;
-        console.log("user.customData", user);
-    
-        // Extract customData from token and add to session
-        if (token.customData) {
-          session.customData = token.customData;
-        }
-    
-        // If you specifically want the userProfile
-        if (token.customData && token.customData.userProfile) {
-          session.userProfile = token.customData.userProfile;
-        }
-        //console.log("customData in session:", token.customData);
-      } else {
+      const db = await connectToDb();
+      const userData = await db.collection("users").findOne({ twitterId: token.sub });
+      if (userData) {
+        // Merge userData with existing session user object
+        session.user = {
+          ...session.user, // spread existing user data
+          ...userData // spread the new userData
+        };
+    } else {
         console.error("Token is undefined or missing sub property");
       }
       return session;

@@ -3,22 +3,52 @@ import { ObjectId } from 'mongodb';
 import { error } from '@sveltejs/kit';
 
 // Helper function to check if a string is a valid ObjectId
-
+function isValidObjectId(id) {
+    return ObjectId.isValid(id) && new ObjectId(id).toString() === id;
+}
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function GET(request) {
     try {
         const db = await connectToDb();
-
+        
+        // Check if the provided ID is a valid ObjectId
+        if (!isValidObjectId(request.params.id)) {
+            return new Response(JSON.stringify({
+                message: 'Invalid topic ID'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+        console.log(request)
         const topic = await db.collection('topics').findOne({ _id: request.params.id });
-
+        
         if (!topic) {
-            throw error(404, 'Topic not found');
+            return new Response(JSON.stringify({
+                message: 'Topic not found'
+            }), {
+                status: 404,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
         return new Response(JSON.stringify(topic), { headers: { 'Content-Type': 'application/json' } });
     } catch (err) {
-        return err;
+        console.error("Error fetching topic:", err);
+        return new Response(JSON.stringify({
+            message: 'Internal Server Error',
+            error: err.message
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 }
 

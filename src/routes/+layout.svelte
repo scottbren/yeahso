@@ -1,85 +1,104 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import { page } from "$app/stores"
 
-  let authenticated = false;
+  let authenticated = false
 
   try {
-    if($page.data.session?.user) {
-      authenticated = true;
-      console.log("layout session", $page.data.session);
+    if ($page.data.session?.user) {
+      authenticated = true
+      console.log("layout session", $page.data.session)
     }
   } catch (error) {
-    console.error("An error occurred:", error);
+    console.error("An error occurred:", error)
   }
 </script>
-
 
 <div>
   <header>
     <div class="signedInStatus">
       <p class="nojs-show loaded">
-        {#if $page.data.session && $page.data.session.user}          {#if $page.data.session.user?.image}
-            <span
-              style="background-image: url('{$page.data.session.user.image}')"
-              class="avatar"
-            />
-          {/if}
-          <span class="signedInText">
-            <small>Signed in as</small><br />
-            <strong
-              >{$page.data.session.user?.email ??
-                $page.data.session.user?.name}</strong
-            >
-          </span>
-          <a href="/auth/signout" class="sign-out-button" data-sveltekit-preload-data="off">Sign out</a>
-        {:else}
-          <a href="/auth/signin" class="sign-out-button" data-sveltekit-preload-data="off">Sign in</a>
+        {#if $page.data.session && $page.data.session.user}
+          <a
+            href={`/profile/${
+              $page.data.session.user?.twitterId || $page.data.session.user?._id
+            }`}
+            class="profile-link"
+          >
+            {#if $page.data.session.user?.image}
+              <span
+                style="background-image: url('{$page.data.session.user.image}')"
+                class="avatar"
+              />
+            {/if}
+            <span class="signedInText">
+              <small>Signed in as</small><br />
+              <strong
+                >{$page.data.session.user?.email ??
+                  $page.data.session.user?.name}</strong
+              >
+            </span>
+          </a>
+
+          <a
+            href="/auth/signout"
+            class="sign-out-button"
+            data-sveltekit-preload-data="off">Sign out</a
+          >
         {/if}
       </p>
     </div>
     <nav>
-        <ul class="navItems">
-          <li class="navItem"><a href="/">home</a></li>
-          <li class="navItem"><a href="/swipe">feed</a></li>
-          <li class="navItem"><a href="/swipe">top</a></li>
-          <li class="navItem"><a href="/post">Post</a></li>
-
-        </ul>
+      <ul class="navItems">
+        <li class="navItem"><a href="/swipe">feed</a></li>
+        <li class="navItem"><a href="/top">top</a></li>
+        <li class="navItem"><a href="/post">post</a></li>
+      </ul>
     </nav>
-    
-    
   </header>
 
   <slot />
-
 </div>
 
 <style>
   /* Global styles */
   :global(body) {
-    font-family: 'Arial', sans-serif; 
+    font-family: "Jockey One", sans-serif;
     padding: 0;
     margin: 0;
     max-width: 100%;
-    background: #2B2632; 
-    color: #C9C9C9; 
+    background: #2b2632;
+    color: #c9c9c9;
+  }
+
+  .profile-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.3s;
+  }
+
+  .profile-link:hover {
+    opacity: 0.7;
   }
 
   :root {
-    --background-color: #2B2632;
-    --gradient-start: #D23D58;
-    --gradient-end: #FFD53F;
+    --background-color: #2b2632;
+    --gradient-start: #d23d58;
+    --gradient-end: #ffd53f;
     --transition-speed: 0.3s;
-    --font: 'Jockey One', sans-serif;
+    --font: "Jockey One", sans-serif;
   }
 
   header {
-    background: #2B2632;
+    background: #2b2632;
     padding: 1rem 2%;
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     position: relative;
     z-index: 1000;
@@ -94,12 +113,17 @@
     align-items: center;
     gap: 1rem;
     order: 2;
+    background-color: #3c3845; /* slightly different background for emphasis */
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+    width: 100%;
+    justify-content: space-between; /* for better distribution on mobile */
   }
 
-  .loaded {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  .signedInStatus:hover {
+    background-color: #453e4d; /* subtle hover effect */
   }
 
   .avatar {
@@ -110,6 +134,19 @@
     background-size: cover;
     background-repeat: no-repeat;
     margin-right: 0.5rem;
+    border: 2px solid #e7e7e7; /* added border for more emphasis */
+  }
+
+  .signedInText {
+    display: flex;
+    flex-direction: column; /* stack text vertically */
+    align-items: flex-start; /* align to the start */
+  }
+
+  .loaded {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
   .navItems {
@@ -122,10 +159,10 @@
 
   .navItem a {
     text-decoration: none;
-    color: #C9C9C9; 
+    color: #c9c9c9;
     padding: 0.5rem 1.5rem;
     border-radius: 0.3rem;
-    font-size: 1.1em;
+    font-size: 1.7em;
     font-weight: 600;
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
     position: relative;
@@ -144,20 +181,57 @@
 
   .sign-out-button {
     text-decoration: none;
-    padding: 10px 20px;
-    font-size: 1em;
-    background-color: #333; 
-    color: white; 
+    padding: 8px 15px; /* slightly reduced for better fit */
+    font-size: 0.9em; /* slightly reduced for better fit */
+    background-color: #333;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
     outline: none;
-    margin-top: 20px;
+    margin-top: 0; /* remove the top margin */
+    margin-left: 15px; /* space between the text and button */
   }
 
   .sign-out-button:hover {
     background-color: #555;
   }
-</style>
 
+  /* Media Query for larger screens */
+  @media screen and (min-width: 768px) {
+    .signedInStatus {
+      width: auto; /* let it adjust based on content */
+      justify-content: initial; /* revert to initial setting */
+    }
+  }
+
+  /* Media Query for mobile screens */
+  @media screen and (max-width: 768px) {
+    header {
+      flex-direction: column-reverse; /* Adjust for mobile */
+    }
+
+    .signedInStatus {
+      order: 2; /* Adjust for mobile */
+    }
+
+    nav {
+      order: 1; /* Adjust for mobile */
+    }
+
+    .navItems {
+      flex-direction: row; /* Adjust for mobile */
+    }
+
+    .navItem {
+      margin: 10px 0; /* Adjust for mobile */
+    }
+
+    .navItem a {
+      text-align: center; /* Adjust for mobile */
+      display: block; /* Adjust for mobile */
+      width: 100%; /* Adjust for mobile */
+    }
+  }
+</style>

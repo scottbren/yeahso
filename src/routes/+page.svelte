@@ -2,4 +2,4 @@
   import Index from '../components/Index.svelte';
 </script>
 
-<Index />
+<Index/>

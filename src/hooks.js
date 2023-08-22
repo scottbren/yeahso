@@ -12,3 +12,9 @@ export function handle({ request, resolve }) {
 
   return resolve(request);
 }
+
+// This function exposes session data to the client side
+export function getSession(request) {
+    const { user } = request.locals.session;
+    return { user };
+}

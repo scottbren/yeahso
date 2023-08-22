@@ -89,6 +89,7 @@ export async function POST({request}) {
         const userId = body.userId;
         const topicId = body.topicId;
         const vote = body.vote; // 'agree' or 'disagree'
+        const timestamp = body.timestamp;
         console.log(topicId, vote)
 
         function getCookies(cookieString) {
@@ -114,7 +115,8 @@ export async function POST({request}) {
         await db.collection('votes').insertOne({
             userId,
             topicId,
-            vote
+            vote,
+            timestamp
         });
         
 
@@ -141,3 +143,7 @@ export async function POST({request}) {
         });
     }
 }
+
+
+
+

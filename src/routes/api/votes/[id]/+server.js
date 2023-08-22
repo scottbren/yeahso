@@ -1,6 +1,5 @@
 import { connectToDb } from '../../../../db.js';
 import { ObjectId } from 'mongodb';
-import { error } from '@sveltejs/kit';
 
 // Helper function to check if a string is a valid ObjectId
 function isValidObjectId(id) {
@@ -13,50 +12,117 @@ export async function GET(request) {
         const db = await connectToDb();
 
         if (!isValidObjectId(request.params.id)) {
-            throw error(400, 'Invalid vote ID');
+            return new Response(JSON.stringify({
+                message: 'Invalid vote ID'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
         const vote = await db.collection('Votes').findOne({ _id: ObjectId(request.params.id) });
 
         if (!vote) {
-            throw error(404, 'Vote not found');
+            return new Response(JSON.stringify({
+                message: 'Vote not found'
+            }), {
+                status: 404,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
-        return new Response(JSON.stringify(vote), { headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(vote), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     } catch (err) {
-        return err;
+        return new Response(JSON.stringify({
+            message: 'Internal Server Error',
+            error: err.message
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 }
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function PUT(request) {
+export async function PUT(event) {
     try {
         const db = await connectToDb();
 
-        if (!isValidObjectId(request.params.id)) {
-            throw error(400, 'Invalid vote ID');
+        if (!isValidObjectId(event.params.id)) {
+            return new Response(JSON.stringify({
+                message: 'Invalid vote ID'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
-        const { votename, profilePicture } = request.body;
+        // Read the content of the stream and parse it as JSON
+        const rawData = [];
+        const reader = event.request.body.getReader();
+        let readResult;
+        while (!(readResult = await reader.read()).done) {
+            rawData.push(...readResult.value);
+        }
+        const jsonString = new TextDecoder().decode(new Uint8Array(rawData));
+        const { vote } = JSON.parse(jsonString);
+        
+
+        // Continue with your existing logic
         const updatedVote = {
-            votename,
-            profilePicture
+            vote
         };
 
-        const result = await db.collection('Votes').updateOne(
-            { _id: ObjectId(request.params.id) },
+        const result = await db.collection('votes').updateOne(
+            { _id: new ObjectId(event.params.id) },
             { $set: updatedVote }
         );
 
         if (result.modifiedCount === 1) {
-            return new Response(JSON.stringify({ message: 'Vote updated successfully' }), { headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({
+                message: 'Vote updated successfully'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         } else {
-            throw error(500, 'Failed to update vote');
+            return new Response(JSON.stringify({
+                message: 'Failed to update vote'
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
     } catch (err) {
-        return err;
+        return new Response(JSON.stringify({
+            message: 'Internal Server Error',
+            error: err.message
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 }
+
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function DELETE(request) {
@@ -64,17 +130,46 @@ export async function DELETE(request) {
         const db = await connectToDb();
 
         if (!isValidObjectId(request.params.id)) {
-            throw error(400, 'Invalid vote ID');
+            return new Response(JSON.stringify({
+                message: 'Invalid vote ID'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
         const result = await db.collection('Votes').deleteOne({ _id: ObjectId(request.params.id) });
 
         if (result.deletedCount === 1) {
-            return new Response(JSON.stringify({ message: 'Vote deleted successfully' }), { headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({
+                message: 'Vote deleted successfully'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         } else {
-            throw error(500, 'Failed to delete vote');
+            return new Response(JSON.stringify({
+                message: 'Failed to delete vote'
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         }
     } catch (err) {
-        return err;
+        return new Response(JSON.stringify({
+            message: 'Internal Server Error',
+            error: err.message
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 }
